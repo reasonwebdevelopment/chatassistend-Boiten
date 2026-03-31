@@ -119,7 +119,7 @@ class Server {
 
     const geminiProxy = new GeminiProxy(
       process.env.GEMINI_API_KEY ?? process.env.AI_API_KEY,
-      process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
+      process.env.GEMINI_MODEL ?? process.env.GEMINI_MODEL,
     );
 
     const chatRouter = new ChatRouter(geminiProxy);
