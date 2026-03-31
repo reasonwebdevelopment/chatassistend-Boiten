@@ -1,0 +1,24 @@
+{
+  "faq": [
+    {
+      "vraag": "Wat zijn jullie openingstijden?",
+      "antwoord": "Wij zijn bereikbaar van maandag t/m vrijdag van 09:00 tot 17:30."
+    },
+    {
+      "vraag": "Hoe kan ik contact opnemen?",
+      "antwoord": "Je kunt ons bereiken via info@horizon.nl of via dit chatvenster."
+    },
+    {
+      "vraag": "Wat kost het?",
+      "antwoord": "Onze prijzen beginnen vanaf €29 per maand. Bekijk onze prijzenpagina voor meer informatie."
+    },
+    {
+      "vraag": "Is er een gratis proefperiode?",
+      "antwoord": "Ja! Je kunt Horizon 14 dagen gratis uitproberen, zonder creditcard."
+    },
+    {
+      "vraag": "Hoe kan ik mijn account annuleren?",
+      "antwoord": "Je kunt je abonnement op elk moment opzeggen via je accountinstellingen."
+    }
+  ]
+}

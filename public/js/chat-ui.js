@@ -122,9 +122,11 @@ class ChatUI {
 
 // Opstarten zodra de pagina geladen is
 document.addEventListener("DOMContentLoaded", () => {
-  const assistant = new ChatAssistant("/faq.json");
-  const ui = new ChatUI(assistant);
-
-  // beschikbaar maken voor debugging
-  window._chatUI = ui;
+  try {
+    const assistant = new ChatAssistant("/faq.json");
+    const ui = new ChatUI(assistant);
+    window._chatUI = ui;
+  } catch (error) {
+    console.error("Chat kon niet opstarten:", error);
+  }
 });

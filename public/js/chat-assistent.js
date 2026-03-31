@@ -9,21 +9,34 @@ class FAQLoader {
 
     try {
       const response = await fetch(this.faqUrl);
+
+      if (!response.ok) {
+        throw new Error(`FAQ niet gevonden (${response.status})`);
+      }
+
       const data = await response.json();
-      this.faqData = data.faq;
-      return this.faqData;
+      this.faqData = data.faq ?? []; // ← veilige fallback
     } catch (error) {
-      console.error("Fout bij laden FAQ:", error);
-      return [];
+      console.warn(
+        "FAQ niet geladen, alleen AI wordt gebruikt:",
+        error.message,
+      );
+      this.faqData = []; // ← altijd een array, nooit null
     }
+
+    return this.faqData;
   }
 
   findAnswer(userInput) {
+    if (!this.faqData || this.faqData.length === 0) return undefined; // ← null guard
+
     const input = userInput.toLowerCase();
 
     return this.faqData.find((item) => {
       const vraag = item.vraag.toLowerCase();
-      return vraag.split(" ").some((word) => input.includes(word));
+      return vraag
+        .split(" ")
+        .some((word) => word.length > 2 && input.includes(word));
     });
   }
 }
@@ -43,11 +56,16 @@ class AIClient {
         body: JSON.stringify({ message }),
       });
 
+      if (!response.ok) {
+        throw new Error(`Server fout (${response.status})`);
+      }
+
       const data = await response.json();
       return data.reply || "Sorry, ik kon geen antwoord vinden.";
     } catch (error) {
-      console.error("AI API error:", error);
-      return "Er ging iets mis bij het ophalen van een antwoord.";
+      // TIJDELIJK: mock antwoord als de Node server niet draait
+      console.warn("Geen server bereikbaar, mock antwoord wordt gebruikt.");
+      return `Je vroeg: "${message}" — de AI server draait nog niet. Start 'node server/server.js' voor echte antwoorden.`;
     }
   }
 }
@@ -55,7 +73,7 @@ class AIClient {
 class ChatAssistant {
   constructor(faqUrl) {
     this.faqLoader = new FAQLoader(faqUrl);
-    this.aiClient = new AIClient("/api/chat"); // ← altijd naar eigen server
+    this.aiClient = new AIClient("/api/chat");
   }
 
   async getResponse(userInput) {
