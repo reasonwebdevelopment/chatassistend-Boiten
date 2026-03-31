@@ -1,24 +1,32 @@
 {
   "faq": [
     {
-      "vraag": "Wat zijn jullie openingstijden?",
-      "antwoord": "Wij zijn bereikbaar van maandag t/m vrijdag van 09:00 tot 17:30."
+      "vraag": "Waarom heb ik geen herinneringen ontvangen?",
+      "antwoord": "De beheerder van de VvE mag geen herinneringen aan u sturen. Daarom ontvangt u een brief of e-mail van ons. Er worden nog geen kosten bij u in rekening gebracht."
     },
     {
-      "vraag": "Hoe kan ik contact opnemen?",
-      "antwoord": "Je kunt ons bereiken via info@horizon.nl of via dit chatvenster."
+      "vraag": "Ik heb een automatische incasso",
+      "antwoord": "Ook als er een automatische incasso is ingesteld kan het zijn dat een bijdrage of factuur onbetaald is gebleven. Mogelijk is er een automatische incasso mislukt. Afrekeningen stookkosten of andere facturen kunnen vaak niet via de automatische incasso worden afgeschreven. Die bedragen moeten dan handmatig worden overgemaakt."
     },
     {
-      "vraag": "Wat kost het?",
-      "antwoord": "Onze prijzen beginnen vanaf €29 per maand. Bekijk onze prijzenpagina voor meer informatie."
+      "vraag": "Waarom heb ik nog geen antwoord ontvangen?",
+      "antwoord": "Het kan zijn dat wij het van u ontvangen bericht moeten overleggen met onze opdrachtgever. Tot wij u kunnen beantwoorden ligt het dossier stil. Dit heeft voor u geen gevolgen."
     },
     {
-      "vraag": "Is er een gratis proefperiode?",
-      "antwoord": "Ja! Je kunt Horizon 14 dagen gratis uitproberen, zonder creditcard."
+      "vraag": "Mag ik een betalingsregeling?",
+      "antwoord": "U kunt een betalingsregeling voorstellen. Dit doet u door ons een e-mail of brief te sturen."
     },
     {
-      "vraag": "Hoe kan ik mijn account annuleren?",
-      "antwoord": "Je kunt je abonnement op elk moment opzeggen via je accountinstellingen."
+      "vraag": "Het bedrag is al betaald",
+      "antwoord": "Als het bedrag waarvoor wij u hebben aangeschreven al is betaald krijgen wij dit door van onze opdrachtgever. Ontvangt u toch nog een herinnering van ons? Dan kunt u een betaalbewijs sturen. Mogelijk is de betaling niet goed verwerkt. Wij zoeken dit graag voor u uit."
+    },
+    {
+      "vraag": "Ik heb geen facturen ontvangen?",
+      "antwoord": "Voor VvE bijdragen ontvangt u doorgaans geen facturen. Daarvoor bestaat ook geen wettelijke verplichting."
+    },
+    {
+      "vraag": "Waar komt dit bedrag vandaan?",
+      "antwoord": "De VvE beheerder heeft eerder inloggegevens aan u verstuurd waarmee u kunt inloggen in de administratie van de VvE. Daarin kunt u op elk moment van de dag zien hoe het openstaande bedrag is opgebouwd. Bent u deze inloggegevens kwijt? U kunt via e-mail nieuwe inloggegevens opvragen bij de beheerder."
     }
   ]
 }

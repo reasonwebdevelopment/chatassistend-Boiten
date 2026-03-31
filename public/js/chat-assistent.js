@@ -57,15 +57,30 @@ class AIClient {
       });
 
       if (!response.ok) {
-        throw new Error(`Server fout (${response.status})`);
+        let errorMessage = `Server fout (${response.status})`;
+
+        try {
+          const errorData = await response.json();
+          if (errorData?.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Geen bruikbare JSON-fout, gebruik standaardmelding.
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return data.reply || "Sorry, ik kon geen antwoord vinden.";
     } catch (error) {
-      // TIJDELIJK: mock antwoord als de Node server niet draait
-      console.warn("Geen server bereikbaar, mock antwoord wordt gebruikt.");
-      return `Je vroeg: "${message}" — de AI server draait nog niet. Start 'node server/server.js' voor echte antwoorden.`;
+      if (error instanceof TypeError) {
+        // Fetch TypeError duidt meestal op netwerk/CORS/server down.
+        console.warn("Geen server bereikbaar, mock antwoord wordt gebruikt.");
+        return `Je vroeg: "${message}" — de AI server draait nog niet. Start 'node server/server.js' voor echte antwoorden.`;
+      }
+
+      return `Sorry, ${error.message}`;
     }
   }
 }

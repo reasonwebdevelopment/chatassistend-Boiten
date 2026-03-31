@@ -1,0 +1,25 @@
+{
+  "name": "chatassistend-boiten",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boudewijn010/chatassistend-Boiten.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boudewijn010/chatassistend-Boiten/issues"
+  },
+  "homepage": "https://github.com/boudewijn010/chatassistend-Boiten#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.18.0",
+    "dotenv": "^16.0.0"
+  }
+}

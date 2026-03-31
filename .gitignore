@@ -1,16 +1,5 @@
-# Environment
 .env
-.env.local
-.env.production
-
-# Dependencies
-node_modules/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# OS bestanden
-.DS_Store
-Thumbs.db
+GEMINI.md
+/node_modules
+.gitignore
+.gitignore
