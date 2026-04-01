@@ -3,38 +3,39 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-class GeminiProxy {
+class MistralProxy {
   constructor(apiKey, model) {
     this.apiKey = apiKey;
     this.model = model;
-    this.apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    this.apiUrl = "https://api.mistral.ai/v1/chat/completions";
   }
 
   _buildRequestBody(message) {
     return {
-      contents: [
+      model: this.model,
+      messages: [
         {
           role: "user",
-          parts: [{ text: message }],
+          content: message,
         },
       ],
     };
   }
 
   _extractReply(data) {
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+    return data?.choices?.[0]?.message?.content ?? null;
   }
 
   async forwardMessage(message) {
     if (!this.apiKey) {
       throw new Error(
-        "Serverconfiguratie mist API key. Zet GEMINI_API_KEY (of AI_API_KEY) in je .env.",
+        "Serverconfiguratie mist API key. Zet MISTRAL_API_KEY in je .env.",
       );
     }
 
     if (!this.model) {
       throw new Error(
-        "Serverconfiguratie mist model. Zet GEMINI_MODEL (of AI_MODEL) in je .env.",
+        "Serverconfiguratie mist model. Zet MISTRAL_MODEL in je .env.",
       );
     }
 
@@ -42,7 +43,7 @@ class GeminiProxy {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": this.apiKey, // ← Gemini gebruikt dit i.p.v. Bearer
+        Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(this._buildRequestBody(message)),
     });
@@ -58,8 +59,8 @@ class GeminiProxy {
       }
 
       throw new Error(
-        error?.error?.message ??
-          `Gemini fout (${response.status}): ${errorBody || "onbekende fout"}`,
+        error?.message ??
+          `Mistral fout (${response.status}): ${errorBody || "onbekende fout"}`,
       );
     }
 
@@ -67,7 +68,7 @@ class GeminiProxy {
     const reply = this._extractReply(data);
 
     if (!reply) {
-      throw new Error("Geen antwoord ontvangen van Gemini.");
+      throw new Error("Geen antwoord ontvangen van Mistral.");
     }
 
     return reply;
@@ -95,7 +96,7 @@ class ChatRouter {
         const reply = await this.aiProxy.forwardMessage(message);
         res.json({ reply });
       } catch (error) {
-        console.error("Gemini API fout:", error.message);
+        console.error("Mistral API fout:", error.message);
 
         const isConfigError = error.message.includes(
           "Serverconfiguratie mist API key",
@@ -123,12 +124,12 @@ class Server {
     this.app.use(express.json());
     this.app.use(express.static("public"));
 
-    const geminiProxy = new GeminiProxy(
-      process.env.GEMINI_API_KEY ?? process.env.AI_API_KEY,
-      process.env.GEMINI_MODEL ?? process.env.AI_MODEL ?? "Gemini 3 Flash Live",
+    const mistralProxy = new MistralProxy(
+      process.env.MISTRAL_API_KEY,
+      process.env.MISTRAL_MODEL ?? "ministral-8b-latest",
     );
 
-    const chatRouter = new ChatRouter(geminiProxy);
+    const chatRouter = new ChatRouter(mistralProxy);
     this.app.use("/api", chatRouter.router);
   }
 
