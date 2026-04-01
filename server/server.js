@@ -32,6 +32,12 @@ class GeminiProxy {
       );
     }
 
+    if (!this.model) {
+      throw new Error(
+        "Serverconfiguratie mist model. Zet GEMINI_MODEL (of AI_MODEL) in je .env.",
+      );
+    }
+
     const response = await fetch(this.apiUrl, {
       method: "POST",
       headers: {
@@ -119,7 +125,7 @@ class Server {
 
     const geminiProxy = new GeminiProxy(
       process.env.GEMINI_API_KEY ?? process.env.AI_API_KEY,
-      process.env.GEMINI_MODEL ?? process.env.GEMINI_MODEL,
+      process.env.GEMINI_MODEL ?? process.env.AI_MODEL ?? "Gemini 3 Flash Live",
     );
 
     const chatRouter = new ChatRouter(geminiProxy);
