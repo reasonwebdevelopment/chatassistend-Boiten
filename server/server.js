@@ -15,6 +15,13 @@ class MistralProxy {
       model: this.model,
       messages: [
         {
+          role: "system",
+          content: `Je bent een vriendelijke klantenservice-assistent van boitenluhrs.
+je bent een betaal coach.
+Beantwoord vragen kort en bondig in maximaal 3 zinnen.
+Antwoord altijd in de taal waarin er tegen je gesproken wordt.`,
+        },
+        {
           role: "user",
           content: message,
         },

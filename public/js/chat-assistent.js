@@ -15,20 +15,20 @@ class FAQLoader {
       }
 
       const data = await response.json();
-      this.faqData = data.faq ?? []; // ← veilige fallback
+      this.faqData = data.faq ?? [];
     } catch (error) {
       console.warn(
         "FAQ niet geladen, alleen AI wordt gebruikt:",
         error.message,
       );
-      this.faqData = []; // ← altijd een array, nooit null
+      this.faqData = [];
     }
 
     return this.faqData;
   }
 
   findAnswer(userInput) {
-    if (!this.faqData || this.faqData.length === 0) return undefined; // ← null guard
+    if (!this.faqData || this.faqData.length === 0) return undefined;
 
     const input = userInput.toLowerCase();
 
@@ -75,7 +75,6 @@ class AIClient {
       return data.reply || "Sorry, ik kon geen antwoord vinden.";
     } catch (error) {
       if (error instanceof TypeError) {
-        // Fetch TypeError duidt meestal op netwerk/CORS/server down.
         console.warn("Geen server bereikbaar, mock antwoord wordt gebruikt.");
         return `Je vroeg: "${message}" — de AI server draait nog niet. Start 'node server/server.js' voor echte antwoorden.`;
       }
@@ -91,12 +90,19 @@ class ChatAssistant {
     this.aiClient = new AIClient("/api/chat");
   }
 
+  _fakeDelay() {
+    // Willekeurige vertraging tussen 800ms en 2000ms voor een natuurlijk gevoel
+    const ms = Math.floor(Math.random() * 1200) + 800;
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async getResponse(userInput) {
     await this.faqLoader.load();
 
     const faqMatch = this.faqLoader.findAnswer(userInput);
 
     if (faqMatch) {
+      await this._fakeDelay();
       return faqMatch.antwoord;
     }
 
