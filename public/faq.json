@@ -5,7 +5,7 @@
       "antwoord": "De beheerder van de VvE mag geen herinneringen aan u sturen. Daarom ontvangt u een brief of e-mail van ons. Er worden nog geen kosten bij u in rekening gebracht."
     },
     {
-      "vraag": "Ik heb een automatische incasso",
+      "vraag": "Ik heb een automatische incasso ingesteld, waarom is er toch niet betaald?",
       "antwoord": "Ook als er een automatische incasso is ingesteld kan het zijn dat een bijdrage of factuur onbetaald is gebleven. Mogelijk is er een automatische incasso mislukt. Afrekeningen stookkosten of andere facturen kunnen vaak niet via de automatische incasso worden afgeschreven. Die bedragen moeten dan handmatig worden overgemaakt."
     },
     {
@@ -13,20 +13,100 @@
       "antwoord": "Het kan zijn dat wij het van u ontvangen bericht moeten overleggen met onze opdrachtgever. Tot wij u kunnen beantwoorden ligt het dossier stil. Dit heeft voor u geen gevolgen."
     },
     {
-      "vraag": "Mag ik een betalingsregeling?",
+      "vraag": "Mag ik een betalingsregeling treffen?",
       "antwoord": "U kunt een betalingsregeling voorstellen. Dit doet u door ons een e-mail of brief te sturen."
     },
     {
-      "vraag": "Het bedrag is al betaald",
+      "vraag": "Ik heb het bedrag al betaald, waarom ontvang ik nog een bericht?",
       "antwoord": "Als het bedrag waarvoor wij u hebben aangeschreven al is betaald krijgen wij dit door van onze opdrachtgever. Ontvangt u toch nog een herinnering van ons? Dan kunt u een betaalbewijs sturen. Mogelijk is de betaling niet goed verwerkt. Wij zoeken dit graag voor u uit."
     },
     {
-      "vraag": "Ik heb geen facturen ontvangen?",
+      "vraag": "Waarom heb ik geen facturen ontvangen?",
       "antwoord": "Voor VvE bijdragen ontvangt u doorgaans geen facturen. Daarvoor bestaat ook geen wettelijke verplichting."
     },
     {
-      "vraag": "Waar komt dit bedrag vandaan?",
+      "vraag": "Waar komt het openstaande bedrag vandaan?",
       "antwoord": "De VvE beheerder heeft eerder inloggegevens aan u verstuurd waarmee u kunt inloggen in de administratie van de VvE. Daarin kunt u op elk moment van de dag zien hoe het openstaande bedrag is opgebouwd. Bent u deze inloggegevens kwijt? U kunt via e-mail nieuwe inloggegevens opvragen bij de beheerder."
+    },
+    {
+      "vraag": "Kan een deurwaarder beslag leggen op spullen van mijn partner?",
+      "antwoord": "In eerste instantie legt de deurwaarder beslag op spullen van de schuldenaar..."
+    },
+    {
+      "vraag": "Wat betekent derdenbeslag?",
+      "antwoord": "Een deurwaarder is bevoegd om beslag te leggen op het gehele vermogen van de schuldenaar..."
+    },
+    {
+      "vraag": "Op welke zaken mag een deurwaarder beslag leggen?",
+      "antwoord": "Beslaglegging kan plaatsvinden op verschillende soorten eigendommen..."
+    },
+    {
+      "vraag": "Wat houdt beslaglegging in?",
+      "antwoord": "Beslaglegging is een juridische term..."
+    },
+    {
+      "vraag": "Hoe bepaal ik een realistisch maandbedrag?",
+      "antwoord": "Gebruik deze eenvoudige methode..."
+    },
+    {
+      "vraag": "Wat gebeurt er als ik niet betaal?",
+      "antwoord": "Wanneer u niet betaalt, kan het dossier worden overgedragen aan een deurwaarder. Dit kan leiden tot extra kosten en mogelijke beslaglegging. Neem daarom tijdig contact met ons op."
+    },
+    {
+      "vraag": "Kan ik uitstel van betaling krijgen?",
+      "antwoord": "In sommige gevallen is uitstel mogelijk. U kunt hiervoor contact met ons opnemen en uw situatie toelichten. Wij beoordelen uw verzoek."
+    },
+    {
+      "vraag": "Welke betaalgegevens moet ik gebruiken?",
+      "antwoord": "De juiste betaalgegevens en het kenmerk vindt u in de brief of e-mail die u van ons heeft ontvangen. Vermeld altijd het kenmerk bij uw betaling."
+    },
+    {
+      "vraag": "Wat moet ik doen als mijn gegevens niet kloppen?",
+      "antwoord": "Neem contact met ons op als uw gegevens niet correct zijn. Wij passen dit voor u aan in het dossier."
+    },
+    {
+      "vraag": "Kan ik bezwaar maken tegen de vordering?",
+      "antwoord": "Ja, u kunt bezwaar maken door ons een e-mail of brief te sturen met een toelichting en eventuele bewijsstukken."
+    },
+    {
+      "vraag": "Hoe lang blijft mijn dossier openstaan?",
+      "antwoord": "Uw dossier blijft openstaan totdat het volledige bedrag is betaald of er een andere oplossing is bereikt."
+    },
+    {
+      "vraag": "Worden er extra kosten in rekening gebracht?",
+      "antwoord": "Bij niet tijdig betalen kunnen extra kosten in rekening worden gebracht, zoals incassokosten of deurwaarderskosten."
+    },
+    {
+      "vraag": "Wat gebeurt er nadat ik heb betaald?",
+      "antwoord": "Na ontvangst en verwerking van uw betaling wordt uw dossier bijgewerkt. Zodra alles is voldaan, wordt het dossier gesloten."
+    },
+    {
+      "vraag": "Kan iemand anders namens mij betalen?",
+      "antwoord": "Ja, iemand anders mag namens u betalen. Vermeld hierbij altijd het juiste kenmerk zodat wij de betaling kunnen verwerken."
+    },
+    {
+      "vraag": "Wat moet ik doen als ik tijdelijk niet kan betalen?",
+      "antwoord": "Neem zo snel mogelijk contact met ons op. Samen kunnen we kijken naar een passende oplossing, zoals een betalingsregeling."
+    },
+    {
+      "vraag": "Hoe weet ik of mijn betaling is ontvangen?",
+      "antwoord": "Het kan enkele werkdagen duren voordat uw betaling zichtbaar is. Bij twijfel kunt u contact met ons opnemen."
+    },
+    {
+      "vraag": "Kan ik meerdere openstaande bedragen tegelijk betalen?",
+      "antwoord": "Ja, u kunt meerdere bedragen in één keer betalen. Vermeld hierbij duidelijk alle kenmerken of neem contact op voor instructies."
+    },
+    {
+      "vraag": "Wat gebeurt er als ik een deel van het bedrag betaal?",
+      "antwoord": "Een deelbetaling wordt verwerkt, maar het resterende bedrag blijft openstaan. Voor het restant kunnen verdere stappen worden genomen."
+    },
+    {
+      "vraag": "Kan ik mijn betaling nog annuleren?",
+      "antwoord": "Een betaling die al is uitgevoerd via de bank kan doorgaans niet worden geannuleerd. Neem bij vragen contact op met uw bank en met ons."
+    },
+    {
+      "vraag": "Ontvang ik een bevestiging van mijn betaling?",
+      "antwoord": "U ontvangt meestal geen aparte bevestiging. Uw betaling wordt verwerkt in uw dossier. Bij vragen kunt u altijd contact opnemen."
     }
   ]
 }
