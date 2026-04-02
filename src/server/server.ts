@@ -23,7 +23,6 @@ interface MistralErrorBody {
   message?: string;
 }
 
-
 class MistralProxy {
   private readonly apiKey: string | undefined;
   private readonly model: string | undefined;
@@ -40,11 +39,13 @@ class MistralProxy {
       messages: [
         {
           role: "system",
-          content: `Je bent een vriendelijke klantenservice-assistent en betaalcoach voor boitenluhrs.nl.
-Beantwoord ALLEEN vragen die direct relevant zijn voor boitenluhrs.nl: diensten, producten, prijzen, contactinformatie of betalingen.
-Als de vraag niet relevant is, mag je GEEN extra uitleg geven en alleen dit antwoorden: "Sorry, ik kan daar niet bij helpen. Stel vragen over boitenluhrs.nl."
+          content: `Je bent een vriendelijke klantenservice-assistent voor boitenluhrs.nl.
+Beantwoord ALLEEN vragen op basis van wat je zeker weet over boitenluhrs.nl.
+Als je het antwoord niet zeker weet, zeg dan: "Ik weet dat niet zeker. Neem contact op via boitenluhrs.nl."
+Verzin NOOIT informatie over producten, diensten, prijzen of mogelijkheden.
 Antwoord kort en bondig, maximaal 2-3 zinnen.
-Antwoord altijd in dezelfde taal als de vraag.`,
+Antwoord altijd in dezelfde taal als de vraag.
+Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.`,
         },
         {
           role: "user",
@@ -107,7 +108,6 @@ Antwoord altijd in dezelfde taal als de vraag.`,
   }
 }
 
-
 const ALLOWED_KEYWORDS: readonly string[] = [
   "boitenluhrs",
   "dienst",
@@ -118,13 +118,19 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "factuur",
   "openingstijd",
   "adres",
+  "schuld",
+  "lening",
+  "aflossing",
+  "achterstand",
+  "incasso",
+  "betalingsregeling",
+  "budget",
 ];
 
 function isRelevant(message: string): boolean {
   const lower = message.toLowerCase();
   return ALLOWED_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
-
 
 class ChatRouter {
   private readonly aiProxy: MistralProxy;
@@ -174,7 +180,6 @@ class ChatRouter {
     });
   }
 }
-
 
 class Server {
   private readonly port: number;
