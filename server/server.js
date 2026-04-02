@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// ------------------- Mistral Proxy -------------------
 class MistralProxy {
   constructor(apiKey, model) {
     this.apiKey = apiKey;
@@ -16,10 +17,11 @@ class MistralProxy {
       messages: [
         {
           role: "system",
-          content: `Je bent een vriendelijke klantenservice-assistent van boitenluhrs.
-je bent een betaal coach.
-Beantwoord vragen kort en bondig in maximaal 3 zinnen.
-Antwoord altijd in de taal waarin er tegen je gesproken wordt.`,
+          content: `Je bent een vriendelijke klantenservice-assistent en betaalcoach voor boitenluhrs.nl.
+Beantwoord ALLEEN vragen die direct relevant zijn voor boitenluhrs.nl: diensten, producten, prijzen, contactinformatie of betalingen.
+Als de vraag niet relevant is, mag je GEEN extra uitleg geven en alleen dit antwoorden: "Sorry, ik kan daar niet bij helpen. Stel vragen over boitenluhrs.nl."
+Antwoord kort en bondig, maximaal 2-3 zinnen.
+Antwoord altijd in dezelfde taal als de vraag.`,
         },
         {
           role: "user",
@@ -82,6 +84,25 @@ Antwoord altijd in de taal waarin er tegen je gesproken wordt.`,
   }
 }
 
+// ------------------- Relevantie Check -------------------
+const allowedKeywords = [
+  "boitenluhrs",
+  "dienst",
+  "product",
+  "prijs",
+  "contact",
+  "betaling",
+  "factuur",
+  "openingstijd",
+  "adres",
+];
+
+function isRelevant(message) {
+  const lower = message.toLowerCase();
+  return allowedKeywords.some((keyword) => lower.includes(keyword));
+}
+
+// ------------------- Chat Router -------------------
 class ChatRouter {
   constructor(aiProxy) {
     this.aiProxy = aiProxy;
@@ -97,6 +118,14 @@ class ChatRouter {
         return res
           .status(400)
           .json({ error: "Geen geldig bericht ontvangen." });
+      }
+
+      // Check op relevante keywords
+      if (!isRelevant(message)) {
+        return res.json({
+          reply:
+            "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor boitenluhrs, zoals over diensten of betalingen.",
+        });
       }
 
       try {
@@ -120,6 +149,7 @@ class ChatRouter {
   }
 }
 
+// ------------------- Server -------------------
 class Server {
   constructor(port) {
     this.port = port;
