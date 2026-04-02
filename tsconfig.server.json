@@ -5,12 +5,8 @@
     "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "lib": ["ES2022", "DOM"]
+    "outDir": "dist"
   },
-  "projects": [],
-  "include": ["server/**/*.ts", "src/server/server.ts"],
-  "references": []
+  "include": ["server/**/*.ts"]
 }
