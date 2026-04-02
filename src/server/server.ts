@@ -131,7 +131,9 @@ Beantwoord ALLEEN vragen op basis van de meegestuurde website-inhoud hieronder.
 Als het antwoord er niet in staat, zeg dan: "Ik weet dat niet zeker. Neem contact op via boitenluhrs.nl."
 Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
-Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.${contextSection}`,
+Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.
+Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.
+Als de website informele taal gebruikt, gebruik die dan ook. Kopieer geen zinnen letterlijk, maar pas de stijl wel aan.${contextSection}`,
         },
         {
           role: "user",
