@@ -3,6 +3,79 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// ------------------- Scraper -------------------
+
+class WebScraper {
+  private readonly baseUrl: string;
+  private content: string = "";
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  private _stripHtml(html: string): string {
+    return html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  private _extractLinks(html: string): string[] {
+    const matches = [...html.matchAll(/href="([^"]+)"/g)];
+    return matches
+      .map((m) => m[1])
+      .filter((href) => href.startsWith("/") && !href.includes("#"))
+      .map((href) => `${this.baseUrl.replace(/\/$/, "")}${href}`)
+      .filter((url, i, arr) => arr.indexOf(url) === i); // dedupliceren
+  }
+
+  private async _fetchPage(url: string): Promise<string> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return "";
+      const html = await response.text();
+      return this._stripHtml(html);
+    } catch {
+      return "";
+    }
+  }
+
+  async load(): Promise<void> {
+    try {
+      // Haal homepage op
+      const homeResponse = await fetch(this.baseUrl);
+      if (!homeResponse.ok) throw new Error(`HTTP ${homeResponse.status}`);
+      const homeHtml = await homeResponse.text();
+
+      // Vind alle interne links
+      const links = this._extractLinks(homeHtml);
+      console.log(`Gevonden pagina's: ${links.length}`);
+
+      // Scrape elke pagina
+      const pages = await Promise.all([
+        this._fetchPage(this.baseUrl),
+        ...links.map((url) => this._fetchPage(url)),
+      ]);
+
+      // Combineer en limiteer tot 12000 tekens
+      this.content = pages.filter(Boolean).join("\n\n").slice(0, 12000);
+
+      console.log(
+        `Site geladen: ${this.content.length} tekens van ${links.length + 1} pagina's`,
+      );
+    } catch (error) {
+      console.warn("Website kon niet gescraped worden:", error);
+      this.content = "";
+    }
+  }
+
+  getContent(): string {
+    return this.content;
+  }
+}
+
 // ------------------- Mistral Types -------------------
 
 interface MistralMessage {
@@ -27,25 +100,33 @@ class MistralProxy {
   private readonly apiKey: string | undefined;
   private readonly model: string | undefined;
   private readonly apiUrl = "https://api.mistral.ai/v1/chat/completions";
+  private siteContent: string = "";
 
   constructor(apiKey: string | undefined, model: string | undefined) {
     this.apiKey = apiKey;
     this.model = model;
   }
 
+  setSiteContent(content: string): void {
+    this.siteContent = content;
+  }
+
   private _buildRequestBody(message: string): MistralRequestBody {
+    const contextSection = this.siteContent
+      ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
+      : "";
+
     return {
       model: this.model!,
       messages: [
         {
           role: "system",
           content: `Je bent een vriendelijke klantenservice-assistent voor boitenluhrs.nl.
-                    Beantwoord ALLEEN vragen op basis van wat je zeker weet over boitenluhrs.nl.
-                    Als je het antwoord niet zeker weet, zeg dan: "Ik weet dat niet zeker. Neem contact op via boitenluhrs.nl."
-                    Verzin NOOIT informatie over producten, diensten, prijzen of mogelijkheden.
-                    Antwoord kort en bondig, maximaal 2-3 zinnen.
-                    Antwoord altijd in dezelfde taal als de vraag.
-                    Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.`,
+Beantwoord ALLEEN vragen op basis van de meegestuurde website-inhoud hieronder.
+Als het antwoord er niet in staat, zeg dan: "Ik weet dat niet zeker. Neem contact op via boitenluhrs.nl."
+Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
+Antwoord altijd in dezelfde taal als de vraag.
+Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.${contextSection}`,
         },
         {
           role: "user",
@@ -65,7 +146,6 @@ class MistralProxy {
         "Serverconfiguratie mist API key. Zet MISTRAL_API_KEY in je .env.",
       );
     }
-
     if (!this.model) {
       throw new Error(
         "Serverconfiguratie mist model. Zet MISTRAL_MODEL in je .env.",
@@ -84,13 +164,11 @@ class MistralProxy {
     if (!response.ok) {
       const errorBody = await response.text();
       let error: MistralErrorBody | null;
-
       try {
         error = JSON.parse(errorBody) as MistralErrorBody;
       } catch {
         error = null;
       }
-
       throw new Error(
         error?.message ??
           `Mistral fout (${response.status}): ${errorBody || "onbekende fout"}`,
@@ -99,14 +177,12 @@ class MistralProxy {
 
     const data = (await response.json()) as MistralResponseBody;
     const reply = this._extractReply(data);
-
-    if (!reply) {
-      throw new Error("Geen antwoord ontvangen van Mistral.");
-    }
-
+    if (!reply) throw new Error("Geen antwoord ontvangen van Mistral.");
     return reply;
   }
 }
+
+// ------------------- Keyword filter -------------------
 
 const ALLOWED_KEYWORDS: readonly string[] = [
   "boitenluhrs",
@@ -125,12 +201,18 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "incasso",
   "betalingsregeling",
   "budget",
+  "vordering",
+  "deurwaarder",
+  "debiteur",
+  "beslag",
 ];
 
 function isRelevant(message: string): boolean {
   const lower = message.toLowerCase();
   return ALLOWED_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
+
+// ------------------- Router -------------------
 
 class ChatRouter {
   private readonly aiProxy: MistralProxy;
@@ -154,7 +236,7 @@ class ChatRouter {
       if (!isRelevant(message)) {
         res.json({
           reply:
-            "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor boitenluhrs, zoals over diensten of betalingen.",
+            "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor BoitenLuhrs, zoals over incasso, vorderingen of betalingen.",
         });
         return;
       }
@@ -165,13 +247,10 @@ class ChatRouter {
       } catch (error) {
         const message_ = error instanceof Error ? error.message : String(error);
         console.error("Mistral API fout:", message_);
-
         const isConfigError = message_.includes(
           "Serverconfiguratie mist API key",
         );
-        const status = isConfigError ? 503 : 502;
-
-        res.status(status).json({
+        res.status(isConfigError ? 503 : 502).json({
           error: isConfigError
             ? message_
             : "Er ging iets mis bij de AI-service.",
@@ -180,6 +259,8 @@ class ChatRouter {
     });
   }
 }
+
+// ------------------- Server -------------------
 
 class Server {
   private readonly port: number;
@@ -194,17 +275,25 @@ class Server {
   private _configure(): void {
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
+  }
+
+  private _registerChat(mistralProxy: MistralProxy): void {
+    const chatRouter = new ChatRouter(mistralProxy);
+    this.app.use("/api", chatRouter.router);
+  }
+
+  async start(): Promise<void> {
+    const scraper = new WebScraper("https://boitenluhrs.nl/");
+    await scraper.load();
 
     const mistralProxy = new MistralProxy(
       process.env.MISTRAL_API_KEY,
       process.env.MISTRAL_MODEL ?? "ministral-8b-latest",
     );
+    mistralProxy.setSiteContent(scraper.getContent());
 
-    const chatRouter = new ChatRouter(mistralProxy);
-    this.app.use("/api", chatRouter.router);
-  }
+    this._registerChat(mistralProxy);
 
-  start(): void {
     this.app.listen(this.port, () => {
       console.log(`Server draait op http://localhost:${this.port}`);
     });
