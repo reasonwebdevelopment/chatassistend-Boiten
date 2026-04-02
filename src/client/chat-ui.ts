@@ -1,6 +1,7 @@
 type MessageSender = "bot" | "user";
 
-type ChatAssistantInstance = InstanceType<Window["ChatAssistant"]>;
+import { ChatAssistant } from "./chat-assistent.ts";
+type ChatAssistantInstance = InstanceType<typeof ChatAssistant>;
 
 class ChatUI {
   private readonly assistant: ChatAssistantInstance;
@@ -144,7 +145,7 @@ declare global {
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
-    const assistant = new window.ChatAssistant("/faq.json");
+    const assistant = new ChatAssistant("/faq.json");
     window._chatUI = new ChatUI(assistant);
   } catch (error) {
     console.error("Chat kon niet opstarten:", error);

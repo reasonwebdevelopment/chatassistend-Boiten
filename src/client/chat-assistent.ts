@@ -132,12 +132,4 @@ class ChatAssistant {
   }
 }
 
-declare global {
-  interface Window {
-    ChatAssistant: typeof ChatAssistant;
-  }
-}
-
-window.ChatAssistant = ChatAssistant;
-
-export {};
+export { ChatAssistant };
