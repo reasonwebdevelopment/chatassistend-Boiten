@@ -1,23 +1,44 @@
+type MessageSender = "bot" | "user";
+
+type ChatAssistantInstance = InstanceType<Window["ChatAssistant"]>;
+
 class ChatUI {
-  constructor(assistantInstance) {
+  private readonly assistant: ChatAssistantInstance;
+
+  private readonly bubble: HTMLElement;
+  private readonly popup: HTMLElement;
+  private readonly messages: HTMLElement;
+  private readonly input: HTMLInputElement;
+  private readonly sendBtn: HTMLButtonElement;
+  private readonly closeBtn: HTMLButtonElement;
+
+  constructor(assistantInstance: ChatAssistantInstance) {
     this.assistant = assistantInstance;
 
-    this.bubble = document.getElementById("chatBubble");
-    this.popup = document.getElementById("chatPopup");
-    this.messages = document.getElementById("chatMessages");
-    this.input = document.getElementById("chatInput");
-    this.sendBtn = document.getElementById("chatSend");
-    this.closeBtn = document.getElementById("chatClose");
+    this.bubble = ChatUI._requireElement("chatBubble");
+    this.popup = ChatUI._requireElement("chatPopup");
+    this.messages = ChatUI._requireElement("chatMessages");
+    this.input = ChatUI._requireElement<HTMLInputElement>("chatInput");
+    this.sendBtn = ChatUI._requireElement<HTMLButtonElement>("chatSend");
+    this.closeBtn = ChatUI._requireElement<HTMLButtonElement>("chatClose");
 
     this._bindEvents();
   }
 
-  _bindEvents() {
+  private static _requireElement<T extends HTMLElement = HTMLElement>(
+    id: string,
+  ): T {
+    const el = document.getElementById(id) as T | null;
+    if (!el) throw new Error(`Vereist element #${id} niet gevonden in de DOM`);
+    return el;
+  }
+
+  private _bindEvents(): void {
     this.bubble.addEventListener("click", () => this.toggle());
     this.closeBtn.addEventListener("click", () => this.close());
     this.sendBtn.addEventListener("click", () => this._handleSend());
 
-    this.input.addEventListener("keydown", (e) => {
+    this.input.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         this._handleSend();
@@ -25,31 +46,31 @@ class ChatUI {
     });
   }
 
-  toggle() {
+  toggle(): void {
     this.popup.classList.contains("is-open") ? this.close() : this.open();
   }
 
-  open() {
+  open(): void {
     this.popup.classList.add("is-open");
     this.popup.setAttribute("aria-hidden", "false");
     this.bubble.classList.add("is-open");
     this.input.focus();
   }
 
-  close() {
+  close(): void {
     this.popup.classList.remove("is-open");
     this.popup.setAttribute("aria-hidden", "true");
     this.bubble.classList.remove("is-open");
   }
 
-  _getTime() {
+  private _getTime(): string {
     return new Date().toLocaleTimeString("nl-NL", {
       hour: "2-digit",
       minute: "2-digit",
     });
   }
 
-  _addMessage(text, sender = "bot") {
+  private _addMessage(text: string, sender: MessageSender = "bot"): HTMLDivElement {
     const wrapper = document.createElement("div");
     wrapper.classList.add("chat-message", `chat-message--${sender}`);
 
@@ -69,13 +90,9 @@ class ChatUI {
     return wrapper;
   }
 
-  _showTyping() {
+  private _showTyping(): HTMLDivElement {
     const wrapper = document.createElement("div");
-    wrapper.classList.add(
-      "chat-message",
-      "chat-message--bot",
-      "typing-indicator",
-    );
+    wrapper.classList.add("chat-message", "chat-message--bot", "typing-indicator");
 
     const bubble = document.createElement("div");
     bubble.classList.add("chat-message__bubble");
@@ -93,11 +110,11 @@ class ChatUI {
     return wrapper;
   }
 
-  _scrollToBottom() {
+  private _scrollToBottom(): void {
     this.messages.scrollTop = this.messages.scrollHeight;
   }
 
-  async _handleSend() {
+  private async _handleSend(): Promise<void> {
     const text = this.input.value.trim();
     if (!text) return;
 
@@ -108,10 +125,9 @@ class ChatUI {
     this._addMessage(text, "user");
 
     const typingEl = this._showTyping();
-
     const reply = await this.assistant.getResponse(text);
-
     typingEl.remove();
+
     this._addMessage(reply, "bot");
 
     this.input.disabled = false;
@@ -120,13 +136,19 @@ class ChatUI {
   }
 }
 
-// Opstarten zodra de pagina geladen is
+declare global {
+  interface Window {
+    _chatUI: ChatUI;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   try {
-    const assistant = new ChatAssistant("/faq.json");
-    const ui = new ChatUI(assistant);
-    window._chatUI = ui;
+    const assistant = new window.ChatAssistant("/faq.json");
+    window._chatUI = new ChatUI(assistant);
   } catch (error) {
     console.error("Chat kon niet opstarten:", error);
   }
 });
+
+export {};

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": ["node", "express"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["server/**/*.ts", "public/ts/**/*.ts"]
+}

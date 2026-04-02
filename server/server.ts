@@ -1,19 +1,42 @@
-import express from "express";
+import express, { Router, Request, Response, Application } from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// ------------------- Mistral Proxy -------------------
+// ------------------- Mistral Types -------------------
+
+interface MistralMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface MistralRequestBody {
+  model: string;
+  messages: MistralMessage[];
+}
+
+interface MistralResponseBody {
+  choices?: { message?: { content?: string } }[];
+}
+
+interface MistralErrorBody {
+  message?: string;
+}
+
+
 class MistralProxy {
-  constructor(apiKey, model) {
+  private readonly apiKey: string | undefined;
+  private readonly model: string | undefined;
+  private readonly apiUrl = "https://api.mistral.ai/v1/chat/completions";
+
+  constructor(apiKey: string | undefined, model: string | undefined) {
     this.apiKey = apiKey;
     this.model = model;
-    this.apiUrl = "https://api.mistral.ai/v1/chat/completions";
   }
 
-  _buildRequestBody(message) {
+  private _buildRequestBody(message: string): MistralRequestBody {
     return {
-      model: this.model,
+      model: this.model!,
       messages: [
         {
           role: "system",
@@ -31,11 +54,11 @@ Antwoord altijd in dezelfde taal als de vraag.`,
     };
   }
 
-  _extractReply(data) {
+  private _extractReply(data: MistralResponseBody): string | null {
     return data?.choices?.[0]?.message?.content ?? null;
   }
 
-  async forwardMessage(message) {
+  async forwardMessage(message: string): Promise<string> {
     if (!this.apiKey) {
       throw new Error(
         "Serverconfiguratie mist API key. Zet MISTRAL_API_KEY in je .env.",
@@ -59,10 +82,10 @@ Antwoord altijd in dezelfde taal als de vraag.`,
 
     if (!response.ok) {
       const errorBody = await response.text();
-      let error;
+      let error: MistralErrorBody | null;
 
       try {
-        error = JSON.parse(errorBody);
+        error = JSON.parse(errorBody) as MistralErrorBody;
       } catch {
         error = null;
       }
@@ -73,7 +96,7 @@ Antwoord altijd in dezelfde taal als de vraag.`,
       );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as MistralResponseBody;
     const reply = this._extractReply(data);
 
     if (!reply) {
@@ -84,8 +107,8 @@ Antwoord altijd in dezelfde taal als de vraag.`,
   }
 }
 
-// ------------------- Relevantie Check -------------------
-const allowedKeywords = [
+
+const ALLOWED_KEYWORDS: readonly string[] = [
   "boitenluhrs",
   "dienst",
   "product",
@@ -97,51 +120,54 @@ const allowedKeywords = [
   "adres",
 ];
 
-function isRelevant(message) {
+function isRelevant(message: string): boolean {
   const lower = message.toLowerCase();
-  return allowedKeywords.some((keyword) => lower.includes(keyword));
+  return ALLOWED_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
 
-// ------------------- Chat Router -------------------
+
 class ChatRouter {
-  constructor(aiProxy) {
+  private readonly aiProxy: MistralProxy;
+  readonly router: Router;
+
+  constructor(aiProxy: MistralProxy) {
     this.aiProxy = aiProxy;
-    this.router = express.Router();
+    this.router = Router();
     this._registerRoutes();
   }
 
-  _registerRoutes() {
-    this.router.post("/chat", async (req, res) => {
-      const { message } = req.body;
+  private _registerRoutes(): void {
+    this.router.post("/chat", async (req: Request, res: Response) => {
+      const { message } = req.body as { message?: unknown };
 
       if (!message || typeof message !== "string") {
-        return res
-          .status(400)
-          .json({ error: "Geen geldig bericht ontvangen." });
+        res.status(400).json({ error: "Geen geldig bericht ontvangen." });
+        return;
       }
 
-      // Check op relevante keywords
       if (!isRelevant(message)) {
-        return res.json({
+        res.json({
           reply:
             "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor boitenluhrs, zoals over diensten of betalingen.",
         });
+        return;
       }
 
       try {
         const reply = await this.aiProxy.forwardMessage(message);
         res.json({ reply });
       } catch (error) {
-        console.error("Mistral API fout:", error.message);
+        const message_ = error instanceof Error ? error.message : String(error);
+        console.error("Mistral API fout:", message_);
 
-        const isConfigError = error.message.includes(
+        const isConfigError = message_.includes(
           "Serverconfiguratie mist API key",
         );
         const status = isConfigError ? 503 : 502;
 
         res.status(status).json({
           error: isConfigError
-            ? error.message
+            ? message_
             : "Er ging iets mis bij de AI-service.",
         });
       }
@@ -149,15 +175,18 @@ class ChatRouter {
   }
 }
 
-// ------------------- Server -------------------
+
 class Server {
-  constructor(port) {
+  private readonly port: number;
+  private readonly app: Application;
+
+  constructor(port: number) {
     this.port = port;
     this.app = express();
     this._configure();
   }
 
-  _configure() {
+  private _configure(): void {
     this.app.use(express.json());
     this.app.use(express.static("public"));
 
@@ -170,12 +199,12 @@ class Server {
     this.app.use("/api", chatRouter.router);
   }
 
-  start() {
+  start(): void {
     this.app.listen(this.port, () => {
       console.log(`Server draait op http://localhost:${this.port}`);
     });
   }
 }
 
-const server = new Server(process.env.PORT ?? 3000);
+const server = new Server(Number(process.env.PORT ?? 3000));
 server.start();
