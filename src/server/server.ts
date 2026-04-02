@@ -28,7 +28,11 @@ class WebScraper {
       .map((m) => m[1])
       .filter((href) => href.startsWith("/") && !href.includes("#"))
       .map((href) => `${this.baseUrl.replace(/\/$/, "")}${href}`)
-      .filter((url, i, arr) => arr.indexOf(url) === i); // dedupliceren
+      .filter((url, i, arr) => arr.indexOf(url) === i)
+      .filter(
+        (url) =>
+          url !== this.baseUrl && url !== this.baseUrl.replace(/\/$/, ""),
+      ); // verwijder homepage duplicaat
   }
 
   private async _fetchPage(url: string): Promise<string> {
@@ -52,6 +56,7 @@ class WebScraper {
       // Vind alle interne links
       const links = this._extractLinks(homeHtml);
       console.log(`Gevonden pagina's: ${links.length}`);
+      console.log("Te scrapen URL's:", [this.baseUrl, ...links]);
 
       // Scrape elke pagina
       const pages = await Promise.all([
