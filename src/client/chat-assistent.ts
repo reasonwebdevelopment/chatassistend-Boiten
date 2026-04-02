@@ -44,18 +44,37 @@ class FAQLoader {
     return this.faqData;
   }
 
-  findAnswer(userInput: string): FAQItem | undefined {
-    if (!this.faqData || this.faqData.length === 0) return undefined;
+findAnswer(userInput: string): FAQItem | undefined {
+  if (!this.faqData || this.faqData.length === 0) return undefined;
 
-    const input = userInput.toLowerCase();
+  const input = userInput.toLowerCase();
 
-    return this.faqData.find((item) => {
-      const vraag = item.vraag.toLowerCase();
-      return vraag
-        .split(" ")
-        .some((word) => word.length > 2 && input.includes(word));
-    });
+  const STOP_WORDS = new Set(["de", "het", "een", "van", "is", "wat", "hoe", "kan", "ik", "en", "op", "in", "te"]);
+  const MIN_SCORE = 0.3; // minimaal 30% van de woorden moet overeenkomen
+
+  let bestMatch: FAQItem | undefined;
+  let bestScore = 0;
+
+  for (const item of this.faqData) {
+    const words = item.vraag
+      .toLowerCase()
+      .split(" ")
+      .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+
+    if (words.length === 0) continue;
+
+    const matches = words.filter((word) => input.includes(word));
+    const score = matches.length / words.length;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = item;
+    }
   }
+
+  return bestScore >= MIN_SCORE ? bestMatch : undefined;
+}
+
 }
 
 class AIClient {
