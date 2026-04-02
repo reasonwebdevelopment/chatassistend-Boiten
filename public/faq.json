@@ -107,6 +107,14 @@
     {
       "vraag": "Ontvang ik een bevestiging van mijn betaling?",
       "antwoord": "U ontvangt meestal geen aparte bevestiging. Uw betaling wordt verwerkt in uw dossier. Bij vragen kunt u altijd contact opnemen."
+    },
+    {
+      "vraag": "Wat moet ik doen als ik een fout heb gemaakt bij het betalen?",
+      "antwoord": "Neem direct contact met ons op als u een fout heeft gemaakt bij het betalen. We kunnen samen kijken naar de beste oplossing."
+    },
+    {
+      "vraag": "Ik heb al lang betaald",
+      "antwoord": "Als u al lang betaald heeft, neem dan contact met ons op om uw situatie te bespreken."
     }
   ]
 }
