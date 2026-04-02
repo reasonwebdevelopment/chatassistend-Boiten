@@ -4,9 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.server.json && tsc -p tsconfig.client.json",
-    "start": "node dist/server/server.js",
-    "dev": "node --loader ts-node/esm server/server.ts"
+    "dev": "concurrently \"vite\" \"tsx watch src/server/server.ts\"",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node dist/server/server.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,10 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
+    "concurrently": "^9.2.1",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   }
 }

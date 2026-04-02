@@ -188,7 +188,7 @@ class Server {
 
   private _configure(): void {
     this.app.use(express.json());
-    this.app.use(express.static("public"));
+    this.app.use(express.static("dist/client"));
 
     const mistralProxy = new MistralProxy(
       process.env.MISTRAL_API_KEY,

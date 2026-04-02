@@ -5,8 +5,8 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "public/js",
+    "noEmit": true,
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["public/ts/**/*.ts"]
+  "include": ["src/client/**/*.ts"]
 }
