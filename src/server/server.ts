@@ -7,13 +7,14 @@ dotenv.config();
 
 class WebScraper {
   private readonly baseUrl: string;
-  private content: string = "";
+  private content: string = ""; //gescrapte inhoud van de site
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
   private _stripHtml(html: string): string {
+    // Verwijder scripts, styles en overige tags zodat alleen leesbare tekst overblijft.
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -23,6 +24,7 @@ class WebScraper {
   }
 
   private _extractLinks(html: string): string[] {
+    // Verzamel alleen interne links zodat we niet buiten de domeinscope gaan.
     const matches = [...html.matchAll(/href="([^"]+)"/g)];
     return matches
       .map((m) => m[1])
@@ -36,6 +38,7 @@ class WebScraper {
   }
 
   private async _fetchPage(url: string): Promise<string> {
+    // Haal een pagina op en normaliseer de inhoud naar platte tekst.
     try {
       const response = await fetch(url);
       if (!response.ok) return "";
@@ -48,17 +51,17 @@ class WebScraper {
 
   async load(): Promise<void> {
     try {
-      // Haal homepage op
+      // Gebruik de homepage als startpunt voor het vinden van relevante interne pagina's.
       const homeResponse = await fetch(this.baseUrl);
       if (!homeResponse.ok) throw new Error(`HTTP ${homeResponse.status}`);
       const homeHtml = await homeResponse.text();
 
-      // Vind alle interne links
+      // Vind alle interne links en scrape die mee voor extra context.
       const links = this._extractLinks(homeHtml);
       console.log(`Gevonden pagina's: ${links.length}`);
       console.log("Te scrapen URL's:", [this.baseUrl, ...links]);
 
-      // Scrape elke pagina
+      // Combineer de inhoud van meerdere pagina's tot één compacte context.
       const pages = await Promise.all([
         this._fetchPage(this.baseUrl),
         ...links.map((url) => this._fetchPage(url)),
@@ -117,6 +120,7 @@ class MistralProxy {
   }
 
   private _buildRequestBody(message: string): MistralRequestBody {
+    // Voeg de gescrapte site-inhoud toe als context voor het model.
     const contextSection = this.siteContent
       ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
       : "";
@@ -133,10 +137,7 @@ Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
 Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.
 Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.
-
-Als iemand vraagt of BoitenLuhrs betrouwbaar of legitiem is, bevestig dan vriendelijk dat het een officieel incassobureau is en verwijs naar boitenluhrs.nl.
-Als iemand aangeeft niet te willen of kunnen betalen, reageer dan begripvol en verwijs naar de mogelijkheid van een betalingsregeling via e-mail of brief.
-Weiger nooit een vraag die ook maar enigszins over betalingen, schulden of incasso gaat.${contextSection}`,
+Als de website informele taal gebruikt, gebruik die dan ook. Kopieer geen zinnen letterlijk, maar pas de stijl wel aan.${contextSection}`,
         },
         {
           role: "user",
@@ -147,10 +148,12 @@ Weiger nooit een vraag die ook maar enigszins over betalingen, schulden of incas
   }
 
   private _extractReply(data: MistralResponseBody): string | null {
+    // Haal alleen de tekst van het eerste antwoord op.
     return data?.choices?.[0]?.message?.content ?? null;
   }
 
   async forwardMessage(message: string): Promise<string> {
+    // Valideer eerst de configuratie voordat we een externe API-call doen.
     if (!this.apiKey) {
       throw new Error(
         "Serverconfiguratie mist API key. Zet MISTRAL_API_KEY in je .env.",
@@ -201,8 +204,8 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "prijs",
   "contact",
   "betaling",
-  "betalen", // ← nieuw
-  "betaald", // ← nieuw
+  "betalen",
+  "betaald",
   "factuur",
   "openingstijd",
   "adres",
@@ -217,15 +220,28 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "deurwaarder",
   "debiteur",
   "beslag",
-  "herinnering", // ← nieuw
-  "openstaand", // ← nieuw
-  "kenmerk", // ← nieuw
-  "oplichter", // ← nieuw
-  "legitiem", // ← nieuw
-  "niet betalen", // ← nieuw
+  "herinnering",
+  "openstaand",
+  "kenmerk",
+  "oplichter",
+  "legitiem",
+  "niet betalen",
+  "telefoon",
+  "telefoonnummer",
+  "bellen",
+  "nummer",
+  "bereikbaar",
+  "mail",
+  "email",
+  "e-mail",
+  "locatie",
+  "vestiging",
+  "kantoor",
+  "openingstijd",
 ];
 
 function isRelevant(message: string): boolean {
+  // Sta alleen vragen toe die waarschijnlijk over BoitenLuhrs gaan.
   const lower = message.toLowerCase();
   return ALLOWED_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
@@ -243,6 +259,7 @@ class ChatRouter {
   }
 
   private _registerRoutes(): void {
+    // Eén chatendpoint dat input valideert, filtert en daarna doorstuurt naar de AI-service.
     this.router.post("/chat", async (req: Request, res: Response) => {
       const { message } = req.body as { message?: unknown };
 
@@ -291,16 +308,19 @@ class Server {
   }
 
   private _configure(): void {
+    // Basis Express-configuratie: JSON body parsing en statische clientbestanden.
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
   }
 
   private _registerChat(mistralProxy: MistralProxy): void {
+    // Koppel de chatrouter onder /api zodat de client de backend kan aanroepen.
     const chatRouter = new ChatRouter(mistralProxy);
     this.app.use("/api", chatRouter.router);
   }
 
   async start(): Promise<void> {
+    // Laad eerst de website-inhoud, initialiseer daarna de AI-proxy en start pas dan de server.
     const scraper = new WebScraper("https://boitenluhrs.nl/");
     await scraper.load();
 
