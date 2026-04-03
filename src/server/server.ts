@@ -133,7 +133,10 @@ Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
 Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.
 Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.
-Als de website informele taal gebruikt, gebruik die dan ook. Kopieer geen zinnen letterlijk, maar pas de stijl wel aan.${contextSection}`,
+
+Als iemand vraagt of BoitenLuhrs betrouwbaar of legitiem is, bevestig dan vriendelijk dat het een officieel incassobureau is en verwijs naar boitenluhrs.nl.
+Als iemand aangeeft niet te willen of kunnen betalen, reageer dan begripvol en verwijs naar de mogelijkheid van een betalingsregeling via e-mail of brief.
+Weiger nooit een vraag die ook maar enigszins over betalingen, schulden of incasso gaat.${contextSection}`,
         },
         {
           role: "user",
@@ -198,6 +201,8 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "prijs",
   "contact",
   "betaling",
+  "betalen", // ← nieuw
+  "betaald", // ← nieuw
   "factuur",
   "openingstijd",
   "adres",
@@ -212,6 +217,12 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "deurwaarder",
   "debiteur",
   "beslag",
+  "herinnering", // ← nieuw
+  "openstaand", // ← nieuw
+  "kenmerk", // ← nieuw
+  "oplichter", // ← nieuw
+  "legitiem", // ← nieuw
+  "niet betalen", // ← nieuw
 ];
 
 function isRelevant(message: string): boolean {
