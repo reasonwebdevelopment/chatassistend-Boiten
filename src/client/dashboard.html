@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat Dashboard</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+      }
+      #conversations {
+        width: 200px;
+        border-right: 1px solid #ccc;
+        padding-right: 10px;
+      }
+      #conversations div {
+        cursor: pointer;
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+      }
+      #conversations div:hover {
+        background-color: #f0f0f0;
+      }
+      #messages {
+        flex: 1;
+        padding-left: 10px;
+      }
+      .message {
+        margin-bottom: 10px;
+      }
+      .user {
+        color: blue;
+      }
+      .assistant {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="conversations">
+      <h3>Gesprekken</h3>
+    </div>
+    <div id="messages">
+      <h3>Berichten</h3>
+    </div>
+
+    <script type="module" src="./dashboard.ts"></script>
+  </body>
+</html>
