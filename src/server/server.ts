@@ -6,6 +6,8 @@ import { ChatRouter } from "./chatRouter.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+const db = new Database();
+await db.init();
 class Server {
   private app = express();
 
