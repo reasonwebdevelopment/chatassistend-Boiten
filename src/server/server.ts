@@ -3,6 +3,8 @@ import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 class Server {
   private app = express();

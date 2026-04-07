@@ -12,6 +12,6 @@
     "lib": ["ES2022", "DOM"]
   },
   "projects": [],
-  "include": ["src/server/**/*.ts"],
+  "include": ["src/server/**/*.ts", "test-db.ts"],
   "references": []
 }

@@ -11,6 +11,7 @@ export class Database {
       database: process.env.DB_NAME ?? "chatbot",
       waitForConnections: true,
     });
+    console.log("Database pool aangemaakt.");
   }
 
   async init(): Promise<void> {
@@ -20,6 +21,8 @@ export class Database {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    console.log("Tabel 'conversations' klaar.");
+
     await this.pool.execute(`
       CREATE TABLE IF NOT EXISTS messages (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,13 +34,17 @@ export class Database {
       )
     `);
     console.log("Database klaar.");
+    console.log("Database init compleet.");
   }
 
   async createConversation(): Promise<number> {
+    console.log("Nieuwe conversatie aanmaken...");
     const [result] = await this.pool.execute(
       "INSERT INTO conversations () VALUES ()",
     );
-    return (result as mysql.ResultSetHeader).insertId;
+    const insertId = (result as mysql.ResultSetHeader).insertId;
+    console.log("Conversatie aangemaakt, ID:", insertId);
+    return insertId;
   }
 
   async saveMessage(
@@ -45,22 +52,32 @@ export class Database {
     role: "user" | "assistant",
     content: string,
   ): Promise<void> {
+    console.log(
+      `Bericht opslaan: [${role}] ${content} (conversation ${conversationId})`,
+    );
     await this.pool.execute(
       "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
       [conversationId, role, content],
     );
+    console.log("Bericht opgeslagen.");
   }
 
   async getHistory(
     conversationId: number,
     limit = 20,
   ): Promise<{ role: "user" | "assistant"; content: string }[]> {
+    console.log(
+      `Ophalen van geschiedenis voor conversatie ${conversationId}, limit ${limit}`,
+    );
     const [rows] = await this.pool.execute(
       `SELECT role, content FROM messages
-       WHERE conversation_id = ?
-       ORDER BY created_at ASC
-       LIMIT ?`,
+     WHERE conversation_id = ?
+     ORDER BY created_at ASC
+     LIMIT ?`,
       [conversationId, limit],
+    );
+    console.log(
+      `Geschiedenis opgehaald, ${(rows as any).length} berichten gevonden.`,
     );
     return rows as { role: "user" | "assistant"; content: string }[];
   }
