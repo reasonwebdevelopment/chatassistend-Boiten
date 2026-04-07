@@ -9,6 +9,7 @@ interface FAQData {
 
 interface AIResponse {
   reply?: string;
+  conversation_id?: number;
 }
 
 interface AIErrorResponse {
@@ -44,41 +45,55 @@ class FAQLoader {
     return this.faqData;
   }
 
-findAnswer(userInput: string): FAQItem | undefined {
-  if (!this.faqData || this.faqData.length === 0) return undefined;
+  findAnswer(userInput: string): FAQItem | undefined {
+    if (!this.faqData || this.faqData.length === 0) return undefined;
 
-  const input = userInput.toLowerCase();
+    const input = userInput.toLowerCase();
 
-  const STOP_WORDS = new Set(["de", "het", "een", "van", "is", "wat", "hoe", "kan", "ik", "en", "op", "in", "te"]);
-  const MIN_SCORE = 0.3; // minimaal 30% van de woorden moet overeenkomen
+    const STOP_WORDS = new Set([
+      "de",
+      "het",
+      "een",
+      "van",
+      "is",
+      "wat",
+      "hoe",
+      "kan",
+      "ik",
+      "en",
+      "op",
+      "in",
+      "te",
+    ]);
+    const MIN_SCORE = 0.3;
 
-  let bestMatch: FAQItem | undefined;
-  let bestScore = 0;
+    let bestMatch: FAQItem | undefined;
+    let bestScore = 0;
 
-  for (const item of this.faqData) {
-    const words = item.vraag
-      .toLowerCase()
-      .split(" ")
-      .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+    for (const item of this.faqData) {
+      const words = item.vraag
+        .toLowerCase()
+        .split(" ")
+        .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 
-    if (words.length === 0) continue;
+      if (words.length === 0) continue;
 
-    const matches = words.filter((word) => input.includes(word));
-    const score = matches.length / words.length;
+      const matches = words.filter((word) => input.includes(word));
+      const score = matches.length / words.length;
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = item;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = item;
+      }
     }
+
+    return bestScore >= MIN_SCORE ? bestMatch : undefined;
   }
-
-  return bestScore >= MIN_SCORE ? bestMatch : undefined;
-}
-
 }
 
 class AIClient {
   private readonly proxyUrl: string;
+  private conversationId: number | null = null; // Onthoudt het gesprek
 
   constructor(proxyUrl: string) {
     this.proxyUrl = proxyUrl;
@@ -91,7 +106,10 @@ class AIClient {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          conversation_id: this.conversationId, // Stuur mee als die er al is
+        }),
       });
 
       if (!response.ok) {
@@ -110,6 +128,12 @@ class AIClient {
       }
 
       const data: AIResponse = await response.json();
+
+      // Sla het conversation_id op voor de volgende berichten
+      if (data.conversation_id) {
+        this.conversationId = data.conversation_id;
+      }
+
       return data.reply ?? "Sorry, ik kon geen antwoord vinden.";
     } catch (error) {
       if (error instanceof TypeError) {

@@ -1,20 +1,89 @@
 import express, { Router, Request, Response, Application } from "express";
 import dotenv from "dotenv";
+import mysql from "mysql2/promise.js";
 
 dotenv.config();
+
+// ------------------- Database -------------------
+
+class Database {
+  private pool: mysql.Pool;
+
+  constructor() {
+    this.pool = mysql.createPool({
+      host: process.env.DB_HOST ?? "localhost",
+      user: process.env.DB_USER ?? "root",
+      password: process.env.DB_PASS ?? "",
+      database: process.env.DB_NAME ?? "chatbot",
+      waitForConnections: true,
+    });
+  }
+
+  async init(): Promise<void> {
+    // Maak tabellen aan als ze nog niet bestaan
+    await this.pool.execute(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await this.pool.execute(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        conversation_id INT NOT NULL,
+        role ENUM('user', 'assistant') NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+      )
+    `);
+    console.log("Database klaar.");
+  }
+
+  async createConversation(): Promise<number> {
+    const [result] = await this.pool.execute(
+      "INSERT INTO conversations () VALUES ()",
+    );
+    return (result as mysql.ResultSetHeader).insertId;
+  }
+
+  async saveMessage(
+    conversationId: number,
+    role: "user" | "assistant",
+    content: string,
+  ): Promise<void> {
+    await this.pool.execute(
+      "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
+      [conversationId, role, content],
+    );
+  }
+
+  async getHistory(
+    conversationId: number,
+    limit = 20,
+  ): Promise<{ role: "user" | "assistant"; content: string }[]> {
+    const [rows] = await this.pool.execute(
+      `SELECT role, content FROM messages
+       WHERE conversation_id = ?
+       ORDER BY created_at ASC
+       LIMIT ?`,
+      [conversationId, limit],
+    );
+    return rows as { role: "user" | "assistant"; content: string }[];
+  }
+}
 
 // ------------------- Scraper -------------------
 
 class WebScraper {
   private readonly baseUrl: string;
-  private content: string = ""; //gescrapte inhoud van de site
+  private content: string = "";
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
   private _stripHtml(html: string): string {
-    // Verwijder scripts, styles en overige tags zodat alleen leesbare tekst overblijft.
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -24,7 +93,6 @@ class WebScraper {
   }
 
   private _extractLinks(html: string): string[] {
-    // Verzamel alleen interne links zodat we niet buiten de domeinscope gaan.
     const matches = [...html.matchAll(/href="([^"]+)"/g)];
     return matches
       .map((m) => m[1])
@@ -34,11 +102,10 @@ class WebScraper {
       .filter(
         (url) =>
           url !== this.baseUrl && url !== this.baseUrl.replace(/\/$/, ""),
-      ); // verwijder homepage duplicaat
+      );
   }
 
   private async _fetchPage(url: string): Promise<string> {
-    // Haal een pagina op en normaliseer de inhoud naar platte tekst.
     try {
       const response = await fetch(url);
       if (!response.ok) return "";
@@ -51,28 +118,20 @@ class WebScraper {
 
   async load(): Promise<void> {
     try {
-      // Gebruik de homepage als startpunt voor het vinden van relevante interne pagina's.
       const homeResponse = await fetch(this.baseUrl);
       if (!homeResponse.ok) throw new Error(`HTTP ${homeResponse.status}`);
       const homeHtml = await homeResponse.text();
 
-      // Vind alle interne links en scrape die mee voor extra context.
       const links = this._extractLinks(homeHtml);
       console.log(`Gevonden pagina's: ${links.length}`);
-      console.log("Te scrapen URL's:", [this.baseUrl, ...links]);
 
-      // Combineer de inhoud van meerdere pagina's tot één compacte context.
       const pages = await Promise.all([
         this._fetchPage(this.baseUrl),
         ...links.map((url) => this._fetchPage(url)),
       ]);
 
-      // Combineer en limiteer tot 12000 tekens
       this.content = pages.filter(Boolean).join("\n\n").slice(0, 12000);
-
-      console.log(
-        `Site geladen: ${this.content.length} tekens van ${links.length + 1} pagina's`,
-      );
+      console.log(`Site geladen: ${this.content.length} tekens`);
     } catch (error) {
       console.warn("Website kon niet gescraped worden:", error);
       this.content = "";
@@ -119,8 +178,9 @@ class MistralProxy {
     this.siteContent = content;
   }
 
-  private _buildRequestBody(message: string): MistralRequestBody {
-    // Voeg de gescrapte site-inhoud toe als context voor het model.
+  private _buildRequestBody(
+    history: { role: "user" | "assistant"; content: string }[],
+  ): MistralRequestBody {
     const contextSection = this.siteContent
       ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
       : "";
@@ -136,24 +196,21 @@ Als het antwoord er niet in staat, zeg dan: "Ik weet dat niet zeker. Neem contac
 Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
 Gebruik GEEN markdown, geen sterretjes, geen opsommingstekens. Antwoord in gewone tekst.
-Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.
-Als de website informele taal gebruikt, gebruik die dan ook. Kopieer geen zinnen letterlijk, maar pas de stijl wel aan.${contextSection}`,
+Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.${contextSection}`,
         },
-        {
-          role: "user",
-          content: message,
-        },
+        // Stuur de volledige gespreksgeschiedenis mee als context
+        ...history,
       ],
     };
   }
 
   private _extractReply(data: MistralResponseBody): string | null {
-    // Haal alleen de tekst van het eerste antwoord op.
     return data?.choices?.[0]?.message?.content ?? null;
   }
 
-  async forwardMessage(message: string): Promise<string> {
-    // Valideer eerst de configuratie voordat we een externe API-call doen.
+  async forwardMessage(
+    history: { role: "user" | "assistant"; content: string }[],
+  ): Promise<string> {
     if (!this.apiKey) {
       throw new Error(
         "Serverconfiguratie mist API key. Zet MISTRAL_API_KEY in je .env.",
@@ -171,7 +228,7 @@ Als de website informele taal gebruikt, gebruik die dan ook. Kopieer geen zinnen
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(this._buildRequestBody(message)),
+      body: JSON.stringify(this._buildRequestBody(history)),
     });
 
     if (!response.ok) {
@@ -237,31 +294,35 @@ const ALLOWED_KEYWORDS: readonly string[] = [
   "locatie",
   "vestiging",
   "kantoor",
-  "openingstijd",
 ];
 
 function isRelevant(message: string): boolean {
-  // Sta alleen vragen toe die waarschijnlijk over BoitenLuhrs gaan.
   const lower = message.toLowerCase();
   return ALLOWED_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
 
 // ------------------- Router -------------------
 
+interface ChatRequestBody {
+  message?: unknown;
+  conversation_id?: unknown;
+}
+
 class ChatRouter {
   private readonly aiProxy: MistralProxy;
+  private readonly db: Database;
   readonly router: Router;
 
-  constructor(aiProxy: MistralProxy) {
+  constructor(aiProxy: MistralProxy, db: Database) {
     this.aiProxy = aiProxy;
+    this.db = db;
     this.router = Router();
     this._registerRoutes();
   }
 
   private _registerRoutes(): void {
-    // Eén chatendpoint dat input valideert, filtert en daarna doorstuurt naar de AI-service.
     this.router.post("/chat", async (req: Request, res: Response) => {
-      const { message } = req.body as { message?: unknown };
+      const { message, conversation_id } = req.body as ChatRequestBody;
 
       if (!message || typeof message !== "string") {
         res.status(400).json({ error: "Geen geldig bericht ontvangen." });
@@ -277,14 +338,29 @@ class ChatRouter {
       }
 
       try {
-        const reply = await this.aiProxy.forwardMessage(message);
-        res.json({ reply });
+        // Maak nieuw gesprek aan of gebruik bestaand
+        let convId: number;
+        if (conversation_id && typeof conversation_id === "number") {
+          convId = conversation_id;
+        } else {
+          convId = await this.db.createConversation();
+        }
+
+        // Sla gebruikersbericht op
+        await this.db.saveMessage(convId, "user", message);
+
+        // Haal geschiedenis op en stuur naar Mistral
+        const history = await this.db.getHistory(convId);
+        const reply = await this.aiProxy.forwardMessage(history);
+
+        // Sla antwoord op
+        await this.db.saveMessage(convId, "assistant", reply);
+
+        res.json({ reply, conversation_id: convId });
       } catch (error) {
         const message_ = error instanceof Error ? error.message : String(error);
-        console.error("Mistral API fout:", message_);
-        const isConfigError = message_.includes(
-          "Serverconfiguratie mist API key",
-        );
+        console.error("Fout:", message_);
+        const isConfigError = message_.includes("Serverconfiguratie mist");
         res.status(isConfigError ? 503 : 502).json({
           error: isConfigError
             ? message_
@@ -308,29 +384,32 @@ class Server {
   }
 
   private _configure(): void {
-    // Basis Express-configuratie: JSON body parsing en statische clientbestanden.
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
   }
 
-  private _registerChat(mistralProxy: MistralProxy): void {
-    // Koppel de chatrouter onder /api zodat de client de backend kan aanroepen.
-    const chatRouter = new ChatRouter(mistralProxy);
+  private _registerChat(mistralProxy: MistralProxy, db: Database): void {
+    const chatRouter = new ChatRouter(mistralProxy, db);
     this.app.use("/api", chatRouter.router);
   }
 
   async start(): Promise<void> {
-    // Laad eerst de website-inhoud, initialiseer daarna de AI-proxy en start pas dan de server.
+    // Database initialiseren
+    const db = new Database();
+    await db.init();
+
+    // Website scrapen
     const scraper = new WebScraper("https://boitenluhrs.nl/");
     await scraper.load();
 
+    // Mistral proxy instellen
     const mistralProxy = new MistralProxy(
       process.env.MISTRAL_API_KEY,
       process.env.MISTRAL_MODEL ?? "ministral-8b-latest",
     );
     mistralProxy.setSiteContent(scraper.getContent());
 
-    this._registerChat(mistralProxy);
+    this._registerChat(mistralProxy, db);
 
     this.app.listen(this.port, () => {
       console.log(`Server draait op http://localhost:${this.port}`);
