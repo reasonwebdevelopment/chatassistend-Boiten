@@ -20,14 +20,15 @@ export class ChatRouter {
 
   private _registerRoutes() {
     this.router.post("/chat", async (req: Request, res: Response) => {
-      const { message, conversation_id } = req.body as ChatRequestBody;
+      const { conversation_id } = req.body as ChatRequestBody;
+      const userMessage = req.body.message;
 
-      if (!message || typeof message !== "string") {
+      if (!userMessage || typeof userMessage !== "string") {
         res.status(400).json({ error: "Geen geldig bericht ontvangen." });
         return;
       }
 
-      if (!isRelevant(message)) {
+      if (!isRelevant(userMessage)) {
         res.json({
           reply:
             "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor BoitenLuhrs, zoals over incasso, vorderingen of betalingen.",
@@ -40,13 +41,13 @@ export class ChatRouter {
           typeof conversation_id === "number"
             ? conversation_id
             : await this.db.createConversation();
-        await this.db.saveMessage(convId, "user", message);
+        await this.db.saveMessage(convId, "user", userMessage);
 
         const history = await this.db.getHistory(convId);
-        const reply = await this.aiProxy.forwardMessage(history);
+        const aiResponse = await this.aiProxy.forwardMessage(history);
 
-        await this.db.saveMessage(convId, "assistant", reply);
-        res.json({ reply, conversation_id: convId });
+        await this.db.saveMessage(convId, "assistant", aiResponse);
+        res.json({ reply: aiResponse, conversation_id: convId });
       } catch (error) {
         const message_ = error instanceof Error ? error.message : String(error);
         const isConfigError = message_.includes("Serverconfiguratie mist");
