@@ -58,5 +58,36 @@ export class ChatRouter {
         });
       }
     });
+
+    this.router.get("/conversations", async (_req: Request, res: Response) => {
+      try {
+        const conversations = await this.db.getConversations();
+        res.json(conversations);
+      } catch (error) {
+        res.status(500).json({ error: "Kon gesprekken niet ophalen." });
+      }
+    });
+
+    this.router.get(
+      "/messages/:convId",
+      async (req: Request, res: Response) => {
+        const convIdParam = Array.isArray(req.params.convId)
+          ? req.params.convId[0]
+          : req.params.convId;
+        const convId = parseInt(convIdParam, 10);
+
+        if (isNaN(convId)) {
+          res.status(400).json({ error: "Ongeldig gesprek ID." });
+          return;
+        }
+
+        try {
+          const messages = await this.db.getHistory(convId);
+          res.json(messages);
+        } catch (error) {
+          res.status(500).json({ error: "Kon berichten niet ophalen." });
+        }
+      },
+    );
   }
 }

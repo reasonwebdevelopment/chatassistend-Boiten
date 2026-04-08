@@ -3,6 +3,7 @@ import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
+import path from "path";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -16,6 +17,12 @@ class Server {
   private _configure() {
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
+    this.app.get(
+      "/dashboard",
+      (_req: express.Request, res: express.Response) => {
+        res.sendFile(path.resolve("dist/client/dashboard.html"));
+      },
+    );
   }
 
   async start() {

@@ -47,6 +47,13 @@ export class Database {
     return insertId;
   }
 
+  async getConversations(): Promise<{ id: number; created_at: string }[]> {
+    const [rows] = await this.pool.execute(
+      "SELECT id, created_at FROM conversations ORDER BY created_at DESC",
+    );
+    return rows as { id: number; created_at: string }[];
+  }
+
   async saveMessage(
     conversationId: number,
     role: "user" | "assistant",
