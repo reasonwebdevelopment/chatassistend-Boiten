@@ -1,10 +1,12 @@
 import express from "express";
-import { Database } from "./db.js";
-import { WebScraper } from "./scraper.js";
-import { MistralProxy } from "./mistral.js";
-import { ChatRouter } from "./chatRouter.js";
+import cors from "cors";
+import { Database } from "../server/db.js";
+import { WebScraper } from "../server/scraper.js";
+import { MistralProxy } from "../server/mistral.js";
+import { ChatRouter } from "../server/chatRouter.js";
 import path from "path";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 class Server {
@@ -15,8 +17,12 @@ class Server {
   }
 
   private _configure() {
+    // CORS FIX
+    this.app.use(cors());
+
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
+
     this.app.get(
       "/dashboard",
       (_req: express.Request, res: express.Response) => {
@@ -36,6 +42,7 @@ class Server {
       process.env.MISTRAL_API_KEY,
       process.env.MISTRAL_MODEL ?? "ministral-8b-latest",
     );
+
     mistral.setSiteContent(scraper.getContent());
 
     const chatRouter = new ChatRouter(mistral, db);

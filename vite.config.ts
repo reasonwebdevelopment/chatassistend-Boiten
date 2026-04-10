@@ -1,15 +1,17 @@
-// vite.config.ts
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  root: "src/client",
   build: {
-    outDir: "../../dist/client",
-    emptyOutDir: true,
+    outDir: "dist/client",
+    emptyOutDir: false,
     rollupOptions: {
       input: {
-        main: "src/client/index.html",
-        dashboard: "src/client/dashboard.html", // <-- dit mist waarschijnlijk
+        main: resolve(process.cwd(), "src/client/index.html"),
+        chatbot: resolve(process.cwd(), "src/client/chatbot.ts"),
+      },
+      output: {
+        entryFileNames: "[name].js",
       },
     },
   },
