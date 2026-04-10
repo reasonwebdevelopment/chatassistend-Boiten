@@ -1,4 +1,20 @@
-(function(){if(window.__boitenluhrsChat)return;window.__boitenluhrsChat=!0;function e(){let e=document.querySelectorAll(`script[src]`);for(let t of Array.from(e))if(t.src.includes(`chatbot.js`)){let e=new URL(t.src);return`${e.protocol}//${e.host}`}return`http://localhost:3000`}let t=e(),n=`${t}/faq.json`,r=`${t}/api/chat`,i=document.createElement(`style`);i.textContent=`
+(function () {
+  if (window.__boitenluhrsChat) return;
+  window.__boitenluhrsChat = !0;
+  function e() {
+    let e = document.querySelectorAll(`script[src]`);
+    for (let t of Array.from(e))
+      if (t.src.includes(`chatbot.js`)) {
+        let e = new URL(t.src);
+        return `${e.protocol}//${e.host}`;
+      }
+    return `http://localhost:3000`;
+  }
+  let t = e(),
+    n = `${t}/faq.json`,
+    r = `${t}/api/chat`,
+    i = document.createElement(`style`);
+  ((i.textContent = `
     #bl-chat-bubble {
       position: fixed;
       bottom: 2rem;
@@ -256,7 +272,11 @@
         right: 1rem;
       }
     }
-  `,document.head.appendChild(i);let a=document.createElement(`div`);a.id=`bl-chat-root`,a.innerHTML=`
+  `),
+    document.head.appendChild(i));
+  let a = document.createElement(`div`);
+  ((a.id = `bl-chat-root`),
+    (a.innerHTML = `
     <button id="bl-chat-bubble" aria-label="Open chat">
       <span class="bl-icon-open">💬 Stel een vraag</span>
       <span class="bl-icon-close">✕</span>
@@ -293,4 +313,166 @@
 
       <p class="bl-disclaimer">Deze chat is informatief en geeft geen financieel advies.</p>
     </div>
-  `,document.body.appendChild(a);class o{data=null;STOP_WORDS=new Set([`de`,`het`,`een`,`van`,`is`,`wat`,`hoe`,`kan`,`ik`,`en`,`op`,`in`,`te`]);async load(){if(this.data)return this.data;try{let e=await fetch(n);if(!e.ok)throw Error(`${e.status}`);this.data=(await e.json()).faq??[]}catch{this.data=[]}return this.data}findAnswer(e){if(!this.data?.length)return;let t=e.toLowerCase(),n,r=0;for(let e of this.data){let i=e.vraag.toLowerCase().split(` `).filter(e=>e.length>2&&!this.STOP_WORDS.has(e));if(!i.length)continue;let a=i.filter(e=>t.includes(e)).length/i.length;a>r&&(r=a,n=e)}return r>=.3?n:void 0}}class s{conversationId=null;async getResponse(e){try{let t=await fetch(r,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({message:e,conversation_id:this.conversationId})});if(!t.ok){let e=`Server fout (${t.status})`;try{let n=await t.json();n?.error&&(e=n.error)}catch{}throw Error(e)}let n=await t.json();return n.conversation_id&&(this.conversationId=n.conversation_id),n.reply??`Sorry, ik kon geen antwoord vinden.`}catch(e){return e instanceof TypeError?`De chatserver is momenteel niet bereikbaar. Probeer het later opnieuw.`:`Sorry, ${e instanceof Error?e.message:String(e)}`}}}class c{faq=new o;ai=new s;delay(){return new Promise(e=>setTimeout(e,Math.floor(Math.random()*1200)+800))}async getResponse(e){await this.faq.load();let t=this.faq.findAnswer(e);return t?(await this.delay(),t.antwoord):this.ai.getResponse(e)}}let l=document.getElementById(`bl-chat-bubble`),u=document.getElementById(`bl-chat-popup`),d=document.getElementById(`bl-chat-messages`),f=document.getElementById(`bl-chat-input`),p=document.getElementById(`bl-chat-send`),m=u.querySelector(`.bl-close-btn`),h=new c;function g(){return new Date().toLocaleTimeString(`nl-NL`,{hour:`2-digit`,minute:`2-digit`})}function _(e,t){let n=document.createElement(`div`);n.className=`bl-msg bl-msg--${t}`;let r=document.createElement(`div`);r.className=`bl-msg__bubble`,r.textContent=e;let i=document.createElement(`div`);i.className=`bl-msg__time`,i.textContent=g(),n.appendChild(r),n.appendChild(i),d.appendChild(n),d.scrollTop=d.scrollHeight}function v(){let e=document.createElement(`div`);e.className=`bl-msg bl-msg--bot bl-typing`;let t=document.createElement(`div`);t.className=`bl-msg__bubble`;for(let e=0;e<3;e++){let e=document.createElement(`span`);e.className=`bl-typing-dot`,t.appendChild(e)}return e.appendChild(t),d.appendChild(e),d.scrollTop=d.scrollHeight,e}function y(){u.classList.add(`is-open`),u.setAttribute(`aria-hidden`,`false`),l.classList.add(`is-open`),f.focus()}function b(){u.classList.remove(`is-open`),u.setAttribute(`aria-hidden`,`true`),l.classList.remove(`is-open`)}async function x(){let e=f.value.trim();if(!e)return;f.value=``,f.disabled=!0,p.disabled=!0,_(e,`user`);let t=v(),n=await h.getResponse(e);t.remove(),_(n,`bot`),f.disabled=!1,p.disabled=!1,f.focus()}l.addEventListener(`click`,()=>u.classList.contains(`is-open`)?b():y()),m.addEventListener(`click`,b),p.addEventListener(`click`,x),f.addEventListener(`keydown`,e=>{e.key===`Enter`&&!e.shiftKey&&(e.preventDefault(),x())})})();
+  `),
+    document.body.appendChild(a));
+  class o {
+    data = null;
+    STOP_WORDS = new Set([
+      `de`,
+      `het`,
+      `een`,
+      `van`,
+      `is`,
+      `wat`,
+      `hoe`,
+      `kan`,
+      `ik`,
+      `en`,
+      `op`,
+      `in`,
+      `te`,
+    ]);
+    async load() {
+      if (this.data) return this.data;
+      try {
+        let e = await fetch(n);
+        if (!e.ok) throw Error(`${e.status}`);
+        this.data = (await e.json()).faq ?? [];
+      } catch {
+        this.data = [];
+      }
+      return this.data;
+    }
+    findAnswer(e) {
+      if (!this.data?.length) return;
+      let t = e.toLowerCase(),
+        n,
+        r = 0;
+      for (let e of this.data) {
+        let i = e.vraag
+          .toLowerCase()
+          .split(` `)
+          .filter((e) => e.length > 2 && !this.STOP_WORDS.has(e));
+        if (!i.length) continue;
+        let a = i.filter((e) => t.includes(e)).length / i.length;
+        a > r && ((r = a), (n = e));
+      }
+      return r >= 0.3 ? n : void 0;
+    }
+  }
+  class s {
+    conversationId = null;
+    async getResponse(e) {
+      try {
+        let t = await fetch(r, {
+          method: `POST`,
+          headers: { "Content-Type": `application/json` },
+          body: JSON.stringify({
+            message: e,
+            conversation_id: this.conversationId,
+          }),
+        });
+        if (!t.ok) {
+          let e = `Server fout (${t.status})`;
+          try {
+            let n = await t.json();
+            n?.error && (e = n.error);
+          } catch {}
+          throw Error(e);
+        }
+        let n = await t.json();
+        return (
+          n.conversation_id && (this.conversationId = n.conversation_id),
+          n.reply ?? `Sorry, ik kon geen antwoord vinden.`
+        );
+      } catch (e) {
+        return e instanceof TypeError
+          ? `De chatserver is momenteel niet bereikbaar. Probeer het later opnieuw.`
+          : `Sorry, ${e instanceof Error ? e.message : String(e)}`;
+      }
+    }
+  }
+  class c {
+    faq = new o();
+    ai = new s();
+    delay() {
+      return new Promise((e) =>
+        setTimeout(e, Math.floor(Math.random() * 1200) + 800),
+      );
+    }
+    async getResponse(e) {
+      await this.faq.load();
+      let t = this.faq.findAnswer(e);
+      return t ? (await this.delay(), t.antwoord) : this.ai.getResponse(e);
+    }
+  }
+  let l = document.getElementById(`bl-chat-bubble`),
+    u = document.getElementById(`bl-chat-popup`),
+    d = document.getElementById(`bl-chat-messages`),
+    f = document.getElementById(`bl-chat-input`),
+    p = document.getElementById(`bl-chat-send`),
+    m = u.querySelector(`.bl-close-btn`),
+    h = new c();
+  function g() {
+    return new Date().toLocaleTimeString(`nl-NL`, {
+      hour: `2-digit`,
+      minute: `2-digit`,
+    });
+  }
+  function _(e, t) {
+    let n = document.createElement(`div`);
+    n.className = `bl-msg bl-msg--${t}`;
+    let r = document.createElement(`div`);
+    ((r.className = `bl-msg__bubble`), (r.textContent = e));
+    let i = document.createElement(`div`);
+    ((i.className = `bl-msg__time`),
+      (i.textContent = g()),
+      n.appendChild(r),
+      n.appendChild(i),
+      d.appendChild(n),
+      (d.scrollTop = d.scrollHeight));
+  }
+  function v() {
+    let e = document.createElement(`div`);
+    e.className = `bl-msg bl-msg--bot bl-typing`;
+    let t = document.createElement(`div`);
+    t.className = `bl-msg__bubble`;
+    for (let e = 0; e < 3; e++) {
+      let e = document.createElement(`span`);
+      ((e.className = `bl-typing-dot`), t.appendChild(e));
+    }
+    return (
+      e.appendChild(t),
+      d.appendChild(e),
+      (d.scrollTop = d.scrollHeight),
+      e
+    );
+  }
+  function y() {
+    (u.classList.add(`is-open`),
+      u.setAttribute(`aria-hidden`, `false`),
+      l.classList.add(`is-open`),
+      f.focus());
+  }
+  function b() {
+    (u.classList.remove(`is-open`),
+      u.setAttribute(`aria-hidden`, `true`),
+      l.classList.remove(`is-open`));
+  }
+  async function x() {
+    let e = f.value.trim();
+    if (!e) return;
+    ((f.value = ``), (f.disabled = !0), (p.disabled = !0), _(e, `user`));
+    let t = v(),
+      n = await h.getResponse(e);
+    (t.remove(), _(n, `bot`), (f.disabled = !1), (p.disabled = !1), f.focus());
+  }
+  (l.addEventListener(`click`, () =>
+    u.classList.contains(`is-open`) ? b() : y(),
+  ),
+    m.addEventListener(`click`, b),
+    p.addEventListener(`click`, x),
+    f.addEventListener(`keydown`, (e) => {
+      e.key === `Enter` && !e.shiftKey && (e.preventDefault(), x());
+    }));
+})();

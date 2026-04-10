@@ -27,7 +27,7 @@
 
   const SERVER_URL = getServerUrl();
   const FAQ_URL = `${SERVER_URL}/faq.json`;
-  const API_URL = `${SERVER_URL}/api/chat`;
+  const API_URL = "https://boitenchat-355e0694e40b.herokuapp.com/api/chat"; //!hier reqest url aanpassen als nodig
 
   // ─────────────────────────────────────────────
   // 2. CSS — gebaseerd op style.css van het project
