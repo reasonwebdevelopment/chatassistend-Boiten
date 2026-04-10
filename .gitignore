@@ -1,7 +1,7 @@
 .env
 /node_modules
 package-lock.json
-/dist
+
 /.vscode
 test-db.ts
 /public/FAQ_zonder_antwoorden.json
