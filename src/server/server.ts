@@ -18,10 +18,18 @@ class Server {
   private _configure() {
     this.app.use(
       cors({
-        origin: ["https://boitenluhrs.nl/"],
+        origin: ["https://boitenluhrs.nl"],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
+        allowedHeaders: ["Content-Type"],
+      }),
+    );
+
+    this.app.options(
+      "*",
+      cors({
+        origin: "https://boitenluhrs.nl",
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type"],
       }),
     );
 
