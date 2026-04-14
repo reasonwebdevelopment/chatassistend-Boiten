@@ -1,6 +1,3 @@
-import fs from "fs";
-import path from "path";
-
 interface FAQItem {
   vraag: string;
   antwoord: string;
@@ -16,12 +13,20 @@ async function loadFAQ(): Promise<FAQItem[]> {
   if (faqCache) return faqCache;
 
   try {
-    const faqPath = path.join(process.cwd(), "public", "faq.json");
-    const data: FAQData = JSON.parse(fs.readFileSync(faqPath, "utf-8"));
+    const faqUrl =
+      process.env.FAQ_URL ??
+      "https://boitenchat-355e0694e40b.herokuapp.com/faq.json";
+    const response = await fetch(faqUrl);
+
+    if (!response.ok) {
+      throw new Error(`FAQ URL gaf status ${response.status}`);
+    }
+
+    const data: FAQData = await response.json();
     faqCache = data.faq ?? [];
     return faqCache;
   } catch (error) {
-    console.error("Fout bij laden van FAQ:", error);
+    console.error("Fout bij laden van FAQ via URL:", error);
     return [];
   }
 }
