@@ -34,6 +34,13 @@
   // ─────────────────────────────────────────────
   const style = document.createElement("style");
   style.textContent = `
+    @import url("https://fonts.googleapis.com/css2?family=Biryani:wght@300;400;500;600;700&display=swap");
+
+    #bl-chat-root,
+    #bl-chat-root * {
+      font-family: "Biryani", sans-serif;
+    }
+
     #bl-chat-bubble {
       position: fixed;
       bottom: 2rem;
@@ -41,7 +48,7 @@
       min-width: 58px;
       height: 58px;
       padding: 0 1.2rem;
-      background: #2a5cff;
+      background: #533a92;
       color: #fff;
       border-radius: 999px;
       display: flex;
@@ -49,11 +56,11 @@
       justify-content: center;
       cursor: pointer;
       z-index: 2147483646;
-      box-shadow: 0 4px 20px rgba(42,92,255,0.4);
+      box-shadow: 0 4px 20px rgba(83, 58, 146, 0.4);
       transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
       user-select: none;
       border: none;
-      font-family: "DM Sans", sans-serif;
+      font-family: "Biryani", sans-serif;
       font-size: 0.85rem;
       font-weight: 500;
       gap: 0.5rem;
@@ -61,7 +68,7 @@
     }
     #bl-chat-bubble:hover {
       transform: scale(1.08);
-      box-shadow: 0 8px 30px rgba(42,92,255,0.5);
+      box-shadow: 0 8px 30px rgba(83, 58, 146, 0.5);
     }
     #bl-chat-bubble.is-open {
       padding: 0;
@@ -99,7 +106,7 @@
       pointer-events: none;
       transition: opacity 0.3s cubic-bezier(0.34,1.56,0.64,1),
                   transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-      font-family: "DM Sans", sans-serif;
+      font-family: "Biryani", sans-serif;
     }
     #bl-chat-popup.is-open {
       opacity: 1;
@@ -113,7 +120,7 @@
       align-items: center;
       gap: 0.85rem;
       padding: 1.1rem 1.25rem;
-      background: #2a5cff;
+      background: #533a92;
       color: #fff;
       flex-shrink: 0;
     }
@@ -125,7 +132,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: Georgia, serif;
+      font-family: "Biryani", sans-serif;
       font-size: 1.1rem;
       flex-shrink: 0;
     }
@@ -188,7 +195,7 @@
       word-break: break-word;
     }
     .bl-msg--user .bl-msg__bubble {
-      background: #2a5cff;
+      background: #533a92;
       color: #fff;
       border-bottom-right-radius: 4px;
     }
@@ -236,19 +243,19 @@
       border: 1px solid #e4e2da;
       border-radius: 100px;
       padding: 0.6rem 1rem;
-      font-family: "DM Sans", sans-serif;
+      font-family: "Biryani", sans-serif;
       font-size: 0.875rem;
       background: #f7f5f0;
       color: #1a1a18;
       outline: none;
       transition: border-color 0.2s;
     }
-    #bl-chat-input:focus       { border-color: #2a5cff; }
+    #bl-chat-input:focus       { border-color: #533a92; }
     #bl-chat-input::placeholder { color: #6b6b60; }
 
     #bl-chat-send {
       width: 38px; height: 38px;
-      background: #2a5cff;
+      background: #533a92;
       color: #fff;
       border: none;
       border-radius: 50%;
@@ -259,8 +266,8 @@
       flex-shrink: 0;
       transition: background 0.2s, transform 0.15s;
     }
-    #bl-chat-send:hover              { background: #1a3fd4; transform: scale(1.05); }
-    #bl-chat-send:disabled           { background: #c0c8f0; cursor: not-allowed; transform: none; }
+    #bl-chat-send:hover              { background: #3f2b70; transform: scale(1.05); }
+    #bl-chat-send:disabled           { background: #b5a9d3; cursor: not-allowed; transform: none; }
     #bl-chat-input:disabled          { opacity: 0.6; }
 
     #bl-chat-popup .bl-disclaimer {
@@ -301,7 +308,7 @@
   container.id = "bl-chat-root";
   container.innerHTML = `
     <button id="bl-chat-bubble" aria-label="Open chat">
-      <span class="bl-icon-open">💬 Stel een vraag</span>
+      <span class="bl-icon-open">💬</span>
       <span class="bl-icon-close">✕</span>
     </button>
 
