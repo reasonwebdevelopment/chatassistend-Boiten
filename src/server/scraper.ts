@@ -21,17 +21,24 @@ export class WebScraper {
       .filter((url, i, arr) => arr.indexOf(url) === i)
       .filter(
         (url) =>
-          url !== this.baseUrl && url !== this.baseUrl.replace(/\/$/, ""),
+          url !== this.baseUrl &&
+          url !== this.baseUrl.replace(/\/$/, "") &&
+          !url.includes("/opdrachtgever"),
       );
   }
 
   private async _fetchPage(url: string): Promise<string> {
     try {
+      console.log(`[Scraper] Scrapen: ${url}`);
       const response = await fetch(url);
-      if (!response.ok) return "";
+      if (!response.ok) {
+        console.warn(`[Scraper] Mislukt (${response.status}): ${url}`);
+        return "";
+      }
       const html = await response.text();
       return this._stripHtml(html);
-    } catch {
+    } catch (error) {
+      console.warn(`[Scraper] Fout bij scrapen: ${url}`, error);
       return "";
     }
   }
@@ -43,11 +50,13 @@ export class WebScraper {
       const homeHtml = await homeResponse.text();
 
       const links = this._extractLinks(homeHtml);
-      console.log(`Gevonden pagina's: ${links.length}`);
+      const forcedLinks = ["https://boitenluhrs.nl/debiteur/over-boitenluhrs/"];
+      const allLinks = [...new Set([...links, ...forcedLinks])];
+      console.log(`Gevonden pagina's: ${allLinks.length}`);
 
       const pages = await Promise.all([
         this._fetchPage(this.baseUrl),
-        ...links.map((url) => this._fetchPage(url)),
+        ...allLinks.map((url) => this._fetchPage(url)),
       ]);
 
       this.content = pages.filter(Boolean).join("\n\n").slice(0, 12000);
