@@ -5,6 +5,7 @@ import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
 import path from "path";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 
 class Server {
@@ -15,6 +16,15 @@ class Server {
   }
 
   private _configure() {
+    this.app.use(
+      cors({
+        origin: ["https://boitenluhrs.nl/"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+      }),
+    );
+
     this.app.use(express.json());
     this.app.use(express.static("dist/client"));
     this.app.get(

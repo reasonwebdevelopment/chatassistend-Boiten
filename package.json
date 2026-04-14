@@ -21,12 +21,14 @@
   "homepage": "https://github.com/boudewijn010/chatassistend-Boiten#readme",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
     "mysql2": "^3.20.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "concurrently": "^9.2.1",
