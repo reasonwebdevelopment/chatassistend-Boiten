@@ -1,0 +1,7 @@
+import"./modulepreload-polyfill-wMinxHhO.js";var e=document.getElementById(`conversations`),t=document.getElementById(`messages-list`),n=document.querySelector(`#messages h3`);function r(e){return new Date(e).toLocaleString(`nl-NL`,{day:`2-digit`,month:`short`,hour:`2-digit`,minute:`2-digit`})}async function i(){(await(await fetch(`/api/conversations`)).json()).forEach((t,n)=>{let i=document.createElement(`div`);i.className=`conv-item`,i.style.animationDelay=`${n*40}ms`,i.innerHTML=`
+      <span class="conv-title">#${t.id}</span>
+      <span class="conv-date">${r(t.created_at)}</span>
+    `,i.addEventListener(`click`,()=>{document.querySelectorAll(`.conv-item`).forEach(e=>e.classList.remove(`active`)),i.classList.add(`active`),a(t.id)}),e.appendChild(i)})}async function a(e){n.textContent=`Gesprek #${e}`,t.innerHTML=``;let r=await(await fetch(`/api/messages/${e}`)).json();if(r.length===0){t.innerHTML=`<div class="empty-state"><p>Geen berichten gevonden.</p></div>`;return}r.forEach((e,n)=>{let r=document.createElement(`div`);r.className=`message ${e.role}`,r.style.animationDelay=`${n*30}ms`,r.innerHTML=`
+      <span class="role-label">${e.role===`user`?`Gebruiker`:`Assistent`}</span>
+      <div class="bubble">${e.content}</div>
+    `,t.appendChild(r)})}i();

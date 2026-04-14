@@ -16,7 +16,12 @@ class Server {
     }
     _configure() {
         // CORS FIX
-        this.app.use(cors());
+        this.app.use(cors({
+            origin: ["https://boitenluhrs.nl/"],
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"],
+            credentials: true,
+        }));
         this.app.use(express.json());
         this.app.use(express.static("dist/client"));
         this.app.get("/dashboard", (_req, res) => {
