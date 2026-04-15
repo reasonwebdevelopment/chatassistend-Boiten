@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Biryani:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0f12;
+        --surface: #151820;
+        --surface2: #1c2030;
+        --border: #252a38;
+        --accent: #4f8ef7;
+        --accent2: #7c4dff;
+        --user: #4f8ef7;
+        --assistant: #00c896;
+        --text: #e2e8f0;
+        --text-muted: #5a6480;
+        --text-dim: #8892a4;
+        --header-bg: rgba(21, 24, 32, 0.92);
+        --panel-bg: var(--surface);
+        --panel-bg-2: var(--surface2);
+        --bubble-user-bg: #0f1a2e;
+        --bubble-assistant-bg: #0a1f1a;
+        --toggle-bg: #1c2030;
+        --toggle-text: var(--text);
+        --toggle-border: var(--border);
+      }
+
+      body[data-theme="light"] {
+        --bg: #f5f1ea;
+        --surface: #ffffff;
+        --surface2: #f2ede5;
+        --border: #ded6ca;
+        --accent: #2f6df6;
+        --accent2: #845ef7;
+        --user: #2f6df6;
+        --assistant: #0a9a73;
+        --text: #1f232b;
+        --text-muted: #667085;
+        --text-dim: #8b94a3;
+        --header-bg: rgba(255, 255, 255, 0.88);
+        --panel-bg: #ffffff;
+        --panel-bg-2: #f7f4ee;
+        --bubble-user-bg: #eaf2ff;
+        --bubble-assistant-bg: #e8f6f0;
+        --toggle-bg: #1f232b;
+        --toggle-text: #ffffff;
+        --toggle-border: #1f232b;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Biryani", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        grid-template-columns: 260px 1fr;
+        overflow: hidden;
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+
+      body[data-theme="light"] {
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(47, 109, 246, 0.08),
+            transparent 28%
+          ),
+          var(--bg);
+      }
+
+      /* Header */
+      header {
+        grid-column: 1 / -1;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 12px;
+        backdrop-filter: blur(12px);
+      }
+
+      header .logo {
+        font-family: "Biryani", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      header .sep {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+      }
+
+      header .subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: "Biryani", sans-serif;
+      }
+
+      header .theme-toggle {
+        margin-left: auto;
+        border: 1px solid var(--toggle-border);
+        background: var(--toggle-bg);
+        color: var(--toggle-text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          background 0.2s ease,
+          color 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      header .theme-toggle:hover {
+        transform: translateY(-1px);
+      }
+
+      /* Sidebar */
+      #conversations {
+        background: var(--panel-bg);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #conversations h3 {
+        font-family: "Biryani", sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 20px 16px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .conv-item {
+        cursor: pointer;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        animation: slideIn 0.3s ease both;
+      }
+
+      .conv-item:hover {
+        background: var(--panel-bg-2);
+      }
+      .conv-item.active {
+        background: var(--panel-bg-2);
+        border-left: 2px solid var(--accent);
+      }
+
+      .conv-item .conv-title {
+        font-family: "Biryani", sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .conv-item .conv-date {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      /* Messages panel */
+      #messages {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      #messages h3 {
+        font-family: "Biryani", sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 20px 28px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel-bg);
+        flex-shrink: 0;
+      }
+
+      #messages-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .message {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        animation: fadeUp 0.25s ease both;
+        max-width: 760px;
+      }
+
+      .message .role-label {
+        font-family: "Biryani", sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .message.user .role-label {
+        color: var(--user);
+      }
+      .message.assistant .role-label {
+        color: var(--assistant);
+      }
+
+      .message .bubble {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 2px 8px 8px 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        line-height: 1.65;
+        color: var(--text);
+      }
+
+      .message.user .bubble {
+        border-left: 2px solid var(--user);
+        background: var(--bubble-user-bg);
+      }
+
+      .message.assistant .bubble {
+        border-left: 2px solid var(--assistant);
+        background: var(--bubble-assistant-bg);
+      }
+
+      /* Empty state */
+      .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: var(--text-muted);
+      }
+
+      .empty-state .icon {
+        font-size: 32px;
+        opacity: 0.3;
+      }
+
+      .empty-state p {
+        font-family: "Biryani", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/dashboard-BZhvQxT4.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-wMinxHhO.js">
+  </head>
+  <body>
+    <header>
+      <span class="logo">BoitenLuhrs</span>
+      <div class="sep"></div>
+      <span class="subtitle">chat dashboard</span>
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Schakel naar dagmodus"
+        title="Schakel naar dagmodus"
+      >
+        ☀️
+      </button>
+    </header>
+
+    <div id="conversations">
+      <h3>Gesprekken</h3>
+    </div>
+
+    <div id="messages">
+      <h3>Berichten</h3>
+      <div id="messages-list">
+        <div class="empty-state">
+          <div class="icon">💬</div>
+          <p>Selecteer een gesprek</p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
