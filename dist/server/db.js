@@ -29,6 +29,15 @@ export class Database {
         FOREIGN KEY (conversation_id) REFERENCES conversations(id)
       )
     `);
+        await this.pool.execute(`
+      CREATE TABLE IF NOT EXISTS usage_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        conversation_id INT NOT NULL,
+        tokens INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+      )
+    `);
         console.log("Database klaar.");
         console.log("Database init compleet.");
     }
@@ -56,5 +65,13 @@ export class Database {
      LIMIT ?`, [conversationId, limit]);
         console.log(`Geschiedenis opgehaald, ${rows.length} berichten gevonden.`);
         return rows;
+    }
+    async saveUsageLog(conversationId, tokens) {
+        await this.pool.execute("INSERT INTO usage_logs (conversation_id, tokens) VALUES (?, ?)", [conversationId, tokens]);
+    }
+    async getTotalUsageTokens() {
+        const [rows] = await this.pool.execute("SELECT SUM(tokens) AS total_tokens FROM usage_logs");
+        const firstRow = rows[0];
+        return firstRow?.total_tokens ?? 0;
     }
 }

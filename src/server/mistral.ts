@@ -10,6 +10,7 @@ interface MistralRequestBody {
 
 interface MistralResponseBody {
   choices?: { message?: { content?: string } }[];
+  usage?: { total_tokens?: number };
 }
 
 interface MistralErrorBody {
@@ -58,9 +59,13 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
     return data?.choices?.[0]?.message?.content ?? null;
   }
 
+  private _extractTotalTokens(data: MistralResponseBody): number {
+    return data?.usage?.total_tokens ?? 0;
+  }
+
   async forwardMessage(
     history: { role: "user" | "assistant"; content: string }[],
-  ): Promise<string> {
+  ): Promise<{ reply: string; totalTokens: number }> {
     if (!this.apiKey) throw new Error("Serverconfiguratie mist API key.");
     if (!this.model) throw new Error("Serverconfiguratie mist model.");
 
@@ -87,7 +92,10 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
     const data = (await response.json()) as MistralResponseBody;
     const reply = this._extractReply(data);
     if (!reply) throw new Error("Geen antwoord ontvangen van Mistral.");
-    return reply;
+    return {
+      reply,
+      totalTokens: this._extractTotalTokens(data),
+    };
   }
 
   async askIfRelevant(message: string): Promise<boolean> {
