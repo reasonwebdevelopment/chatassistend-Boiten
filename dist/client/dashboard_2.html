@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BoitenLuhrs — Overzicht</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Biryani:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0f12;
+        --surface: #151820;
+        --surface2: #1c2030;
+        --border: #252a38;
+        --accent: #4f8ef7;
+        --accent2: #7c4dff;
+        --user: #4f8ef7;
+        --assistant: #00c896;
+        --text: #e2e8f0;
+        --text-muted: #5a6480;
+        --text-dim: #8892a4;
+        --header-bg: rgba(21, 24, 32, 0.92);
+        --panel-bg: var(--surface);
+        --panel-bg-2: var(--surface2);
+        --toggle-bg: #1c2030;
+        --toggle-text: var(--text);
+        --toggle-border: var(--border);
+        --card-glow-chats: rgba(79, 142, 247, 0.12);
+        --card-glow-msgs: rgba(0, 200, 150, 0.12);
+        --card-glow-cost: rgba(124, 77, 255, 0.12);
+      }
+
+      body[data-theme="light"] {
+        --bg: #f5f1ea;
+        --surface: #ffffff;
+        --surface2: #f2ede5;
+        --border: #ded6ca;
+        --accent: #2f6df6;
+        --accent2: #845ef7;
+        --user: #2f6df6;
+        --assistant: #0a9a73;
+        --text: #1f232b;
+        --text-muted: #667085;
+        --text-dim: #8b94a3;
+        --header-bg: rgba(255, 255, 255, 0.88);
+        --panel-bg: #ffffff;
+        --panel-bg-2: #f7f4ee;
+        --toggle-bg: #1f232b;
+        --toggle-text: #ffffff;
+        --toggle-border: #1f232b;
+        --card-glow-chats: rgba(47, 109, 246, 0.08);
+        --card-glow-msgs: rgba(10, 154, 115, 0.08);
+        --card-glow-cost: rgba(132, 94, 247, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Biryani", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+
+      body[data-theme="light"] {
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(47, 109, 246, 0.08),
+            transparent 28%
+          ),
+          var(--bg);
+      }
+
+      header {
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 12px;
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      header .logo {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      header .sep {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+      }
+
+      header .subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      header .theme-toggle {
+        margin-left: auto;
+        border: 1px solid var(--toggle-border);
+        background: var(--toggle-bg);
+        color: var(--toggle-text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          background 0.2s ease,
+          color 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      header .theme-toggle:hover {
+        transform: translateY(-1px);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 24px;
+        gap: 48px;
+      }
+
+      .hero {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        animation: fadeUp 0.5s ease both;
+      }
+
+      .hero .eyebrow {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .hero h1 {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+
+      .hero h1 span {
+        color: var(--accent);
+      }
+
+      .hero p {
+        font-size: 14px;
+        font-weight: 300;
+        color: var(--text-dim);
+        max-width: 380px;
+        line-height: 1.7;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 280px);
+        gap: 20px;
+        animation: fadeUp 0.5s 0.15s ease both;
+      }
+
+      @media (max-width: 640px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .stat-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px 28px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        pointer-events: none;
+      }
+
+      .stat-card.chats {
+        border-top: 2px solid var(--user);
+      }
+      .stat-card.chats::before {
+        background: radial-gradient(
+          ellipse at top,
+          var(--card-glow-chats),
+          transparent 70%
+        );
+      }
+
+      .stat-card.messages {
+        border-top: 2px solid var(--assistant);
+      }
+      .stat-card.messages::before {
+        background: radial-gradient(
+          ellipse at top,
+          var(--card-glow-msgs),
+          transparent 70%
+        );
+      }
+
+      .stat-card.cost {
+        border-top: 2px solid var(--accent2);
+      }
+      .stat-card.cost::before {
+        background: radial-gradient(
+          ellipse at top,
+          var(--card-glow-cost),
+          transparent 70%
+        );
+      }
+
+      .stat-card .card-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        position: relative;
+      }
+
+      .stat-card .card-icon {
+        font-size: 20px;
+        line-height: 1;
+        position: relative;
+      }
+
+      .stat-card .card-number {
+        font-size: 48px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        min-height: 48px;
+        position: relative;
+      }
+
+      .stat-card.chats .card-number {
+        color: var(--user);
+      }
+      .stat-card.messages .card-number {
+        color: var(--assistant);
+      }
+      .stat-card.cost .card-number {
+        color: var(--accent2);
+      }
+
+      .stat-card .card-sub {
+        font-size: 12px;
+        font-weight: 300;
+        color: var(--text-dim);
+        position: relative;
+      }
+
+      .shimmer {
+        display: inline-block;
+        width: 80px;
+        height: 48px;
+        border-radius: 6px;
+        background: linear-gradient(
+          90deg,
+          var(--border) 25%,
+          var(--surface2) 50%,
+          var(--border) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      .cta-row {
+        display: flex;
+        gap: 12px;
+        animation: fadeUp 0.5s 0.3s ease both;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-family: "Biryani", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.2s ease;
+        border: none;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(79, 142, 247, 0.25);
+      }
+
+      .btn-primary:hover {
+        box-shadow: 0 6px 28px rgba(79, 142, 247, 0.4);
+      }
+
+      .btn-ghost {
+        background: var(--panel-bg);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+
+      .btn-ghost:hover {
+        color: var(--text);
+        border-color: var(--text-dim);
+      }
+
+      .rule {
+        width: 40px;
+        height: 1px;
+        background: var(--border);
+        border: none;
+        animation: fadeUp 0.5s 0.1s ease both;
+      }
+
+      .error-msg {
+        font-size: 13px;
+        color: #e05858;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/dashboard2-C5lO1fyY.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-Cf3xff8G.js">
+  </head>
+  <body>
+    <header>
+      <span class="logo">BoitenLuhrs</span>
+      <div class="sep"></div>
+      <span class="subtitle">overzicht</span>
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Schakel naar dagmodus"
+        title="Schakel naar dagmodus"
+      >
+        ☀️
+      </button>
+    </header>
+
+    <main>
+      <div class="hero">
+        <span class="eyebrow">Chat statistieken</span>
+        <h1>Jouw gesprekken<br />in één <span>oogopslag</span></h1>
+        <p>
+          Een snel overzicht van alle gevoerde gesprekken en berichten binnen
+          het platform.
+        </p>
+      </div>
+
+      <hr class="rule" />
+
+      <div class="stats-grid">
+        <div class="stat-card chats">
+          <span class="card-icon">💬</span>
+          <span class="card-label">Totaal gesprekken</span>
+          <span class="card-number" id="stat-chats"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Unieke chat-sessies</span>
+        </div>
+        <div class="stat-card messages">
+          <span class="card-icon">✉️</span>
+          <span class="card-label">Totaal berichten</span>
+          <span class="card-number" id="stat-msgs"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Berichten over alle gesprekken</span>
+        </div>
+        <div class="stat-card cost">
+          <span class="card-icon">💸</span>
+          <span class="card-label">Kosten</span>
+          <span class="card-number" id="stat-cost"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Geschatte API kosten</span>
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <a href="/dashboard.html" class="btn btn-primary"
+          >Bekijk gesprekken →</a
+        >
+        <button class="btn btn-ghost" id="refresh-btn">↻ Vernieuwen</button>
+      </div>
+    </main>
+
+  </body>
+</html>

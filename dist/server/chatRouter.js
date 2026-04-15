@@ -29,8 +29,9 @@ export class ChatRouter {
                     : await this.db.createConversation();
                 await this.db.saveMessage(convId, "user", userMessage);
                 const history = await this.db.getHistory(convId);
-                const aiResponse = await this.aiProxy.forwardMessage(history);
+                const { reply: aiResponse, totalTokens } = await this.aiProxy.forwardMessage(history);
                 await this.db.saveMessage(convId, "assistant", aiResponse);
+                await this.db.saveUsageLog(convId, totalTokens);
                 res.json({ reply: aiResponse, conversation_id: convId });
             }
             catch (error) {
@@ -67,6 +68,20 @@ export class ChatRouter {
             }
             catch (error) {
                 res.status(500).json({ error: "Kon berichten niet ophalen." });
+            }
+        });
+        this.router.get("/usage", async (_req, res) => {
+            try {
+                const totalTokens = await this.db.getTotalUsageTokens();
+                const pricePer1K = 0.002;
+                const cost = (totalTokens / 1000) * pricePer1K;
+                res.json({
+                    total_tokens: totalTokens,
+                    cost,
+                });
+            }
+            catch (_error) {
+                res.status(500).json({ error: "Kon usage statistieken niet ophalen." });
             }
         });
     }

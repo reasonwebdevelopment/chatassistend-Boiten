@@ -34,6 +34,9 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
     _extractReply(data) {
         return data?.choices?.[0]?.message?.content ?? null;
     }
+    _extractTotalTokens(data) {
+        return data?.usage?.total_tokens ?? 0;
+    }
     async forwardMessage(history) {
         if (!this.apiKey)
             throw new Error("Serverconfiguratie mist API key.");
@@ -62,7 +65,10 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
         const reply = this._extractReply(data);
         if (!reply)
             throw new Error("Geen antwoord ontvangen van Mistral.");
-        return reply;
+        return {
+            reply,
+            totalTokens: this._extractTotalTokens(data),
+        };
     }
     async askIfRelevant(message) {
         if (!this.apiKey)
