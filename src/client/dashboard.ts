@@ -1,6 +1,13 @@
 const conversationsDiv = document.getElementById("conversations")!;
 const messagesList = document.getElementById("messages-list")!;
 const messagesHeader = document.querySelector("#messages h3")!;
+const themeToggle = document.getElementById(
+  "theme-toggle",
+) as HTMLButtonElement;
+
+const themeStorageKey = "dashboard-theme";
+const sunIcon = "☀️";
+const moonIcon = "🌙";
 
 interface Conversation {
   id: number;
@@ -10,6 +17,33 @@ interface Conversation {
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+type Theme = "dark" | "light";
+
+function getInitialTheme(): Theme {
+  const storedTheme = window.localStorage.getItem(themeStorageKey);
+
+  if (storedTheme === "light" || storedTheme === "dark") {
+    return storedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+function applyTheme(theme: Theme) {
+  document.body.dataset.theme = theme;
+  themeToggle.textContent = theme === "light" ? moonIcon : sunIcon;
+  themeToggle.title =
+    theme === "light" ? "Schakel naar nachtmodus" : "Schakel naar dagmodus";
+  themeToggle.setAttribute(
+    "aria-label",
+    theme === "light" ? "Schakel naar nachtmodus" : "Schakel naar dagmodus",
+  );
+  themeToggle.setAttribute("aria-pressed", String(theme === "light"));
+  window.localStorage.setItem(themeStorageKey, theme);
 }
 
 function formatDate(iso: string): string {
@@ -67,5 +101,13 @@ async function loadMessages(convId: number) {
     messagesList.appendChild(div);
   });
 }
+
+themeToggle.addEventListener("click", () => {
+  const nextTheme: Theme =
+    document.body.dataset.theme === "light" ? "dark" : "light";
+  applyTheme(nextTheme);
+});
+
+applyTheme(getInitialTheme());
 
 loadConversations();
