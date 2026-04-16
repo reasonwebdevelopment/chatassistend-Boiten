@@ -95,8 +95,8 @@ export class ChatRouter {
     this.router.get("/usage", async (_req: Request, res: Response) => {
       try {
         const totalTokens = await this.db.getTotalUsageTokens();
-        const pricePer1K = 0.002;
-        const cost = (totalTokens / 1000) * pricePer1K;
+        const pricePerMillionTokens = 0.0015;
+        const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
 
         res.json({
           total_tokens: totalTokens,

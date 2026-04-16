@@ -85,6 +85,8 @@ async function loadStats(): Promise<void> {
     const formattedCost = (usage.cost ?? 0).toLocaleString("nl-NL", {
       style: "currency",
       currency: "EUR",
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 6,
     });
     statCost.textContent = formattedCost;
   } catch (err) {
