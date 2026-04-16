@@ -10,6 +10,7 @@
     />
     <style>
       :root {
+        --stats-track-width: 880px;
         --bg: #0d0f12;
         --surface: #151820;
         --surface2: #1c2030;
@@ -186,6 +187,7 @@
         display: grid;
         grid-template-columns: repeat(3, 280px);
         gap: 20px;
+        width: min(var(--stats-track-width), 100%);
         animation: fadeUp 0.5s 0.15s ease both;
       }
 
@@ -384,7 +386,7 @@
       }
 
       .chart-section {
-        width: min(960px, 100%);
+        width: min(var(--stats-track-width), 100%);
         background: var(--panel-bg);
         border: 1px solid var(--border);
         border-radius: 16px;
@@ -577,33 +579,6 @@
 
       <hr class="rule" />
 
-      <div class="stats-grid">
-        <div class="stat-card chats">
-          <span class="card-icon">💬</span>
-          <span class="card-label">Totaal gesprekken</span>
-          <span class="card-number" id="stat-chats"
-            ><span class="shimmer"></span
-          ></span>
-          <span class="card-sub">Unieke chat-sessies</span>
-        </div>
-        <div class="stat-card messages">
-          <span class="card-icon">✉️</span>
-          <span class="card-label">Totaal berichten</span>
-          <span class="card-number" id="stat-msgs"
-            ><span class="shimmer"></span
-          ></span>
-          <span class="card-sub">Berichten over alle gesprekken</span>
-        </div>
-        <div class="stat-card cost">
-          <span class="card-icon">💸</span>
-          <span class="card-label">Kosten</span>
-          <span class="card-number" id="stat-cost"
-            ><span class="shimmer"></span
-          ></span>
-          <span class="card-sub">Geschatte API kosten</span>
-        </div>
-      </div>
-
       <section class="chart-section">
         <div class="chart-header">
           <h2>Activiteit over tijd</h2>
@@ -673,6 +648,33 @@
           style="width: 100%; height: 260px; display: block"
         ></canvas>
       </section>
+
+      <div class="stats-grid">
+        <div class="stat-card chats">
+          <span class="card-icon">💬</span>
+          <span class="card-label">Totaal gesprekken</span>
+          <span class="card-number" id="stat-chats"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Unieke chat-sessies</span>
+        </div>
+        <div class="stat-card messages">
+          <span class="card-icon">✉️</span>
+          <span class="card-label">Totaal berichten</span>
+          <span class="card-number" id="stat-msgs"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Berichten over alle gesprekken</span>
+        </div>
+        <div class="stat-card cost">
+          <span class="card-icon">💸</span>
+          <span class="card-label">Kosten</span>
+          <span class="card-number" id="stat-cost"
+            ><span class="shimmer"></span
+          ></span>
+          <span class="card-sub">Geschatte API kosten</span>
+        </div>
+      </div>
 
       <div class="cta-row">
         <a href="/index.html" class="btn btn-primary">Start nieuw gesprek →</a>
