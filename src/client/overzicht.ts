@@ -1,4 +1,4 @@
-import { renderChart, refreshChart } from "./chart";
+import { initChartFilters, renderChart, refreshChart } from "./chart";
 
 const themeToggle = document.getElementById(
   "theme-toggle",
@@ -118,6 +118,7 @@ document.addEventListener("chart:resize", () => {
 });
 
 applyTheme(getInitialTheme());
+initChartFilters();
 loadStats();
 
 export {};

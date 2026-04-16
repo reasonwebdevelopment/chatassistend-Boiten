@@ -21,9 +21,25 @@ const chartCanvas = document.getElementById(
 const chartLegend = document.getElementById(
   "chart-legend",
 ) as HTMLElement | null;
+const chartFilters = document.getElementById("chart-filters");
+const dateFromInput = document.getElementById(
+  "date-from",
+) as HTMLInputElement | null;
+const dateToInput = document.getElementById(
+  "date-to",
+) as HTMLInputElement | null;
+const dateFromPicker = document.getElementById(
+  "date-from-picker",
+) as HTMLInputElement | null;
+const dateToPicker = document.getElementById(
+  "date-to-picker",
+) as HTMLInputElement | null;
+const presetButtons = () =>
+  chartFilters?.querySelectorAll<HTMLButtonElement>(".date-preset");
 
 let tooltipEl: HTMLDivElement | null = null;
-let lastPoints: ChartPoint[] = [];
+let _allConversations: Conversation[] = [];
+let _allCounts: number[] = [];
 let lastBarBounds: Array<{
   x: number;
   width: number;
@@ -32,6 +48,7 @@ let lastBarBounds: Array<{
 }> = [];
 let hoverIdx = -1;
 let lastCanvasWidth = 0;
+let activePresetDays = 7;
 
 function chartColors() {
   const isLight = document.body.dataset.theme === "light";
@@ -49,6 +66,139 @@ function chartColors() {
     tooltipText: isLight ? "#1f232b" : "#e2e8f0",
     barMsgs: isLight ? "#2f6df6" : "#4f8ef7",
   };
+}
+
+function getDateRange(): { from: Date | null; to: Date | null } {
+  const from = parseDateInput(dateFromInput?.value ?? "", false);
+  const to = parseDateInput(dateToInput?.value ?? "", true);
+  return { from, to };
+}
+
+function formatDateInput(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatDatePickerValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateInput(value: string, endOfDay: boolean): Date | null {
+  if (!value.trim()) return null;
+
+  const parts = value.split(/[-/.]/).map((part) => Number(part));
+  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part)))
+    return null;
+
+  const [day, month, year] = parts;
+  const date = new Date(
+    year,
+    month - 1,
+    day,
+    endOfDay ? 23 : 0,
+    endOfDay ? 59 : 0,
+    endOfDay ? 59 : 0,
+    endOfDay ? 999 : 0,
+  );
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function syncTextToPicker(
+  textInput: HTMLInputElement | null,
+  pickerInput: HTMLInputElement | null,
+): void {
+  if (!textInput || !pickerInput) return;
+  const date = parseDateInput(textInput.value, false);
+  pickerInput.value = date ? formatDatePickerValue(date) : "";
+}
+
+function syncPickerToText(
+  pickerInput: HTMLInputElement | null,
+  textInput: HTMLInputElement | null,
+): void {
+  if (!textInput || !pickerInput || !pickerInput.value) return;
+  const date = new Date(`${pickerInput.value}T12:00:00`);
+  textInput.value = formatDateInput(date);
+}
+
+function setActivePreset(days: number): void {
+  activePresetDays = days;
+  presetButtons()?.forEach((button) => {
+    button.classList.toggle(
+      "active",
+      Number(button.dataset.days ?? "0") === days,
+    );
+  });
+}
+
+function clearPresetActiveState(): void {
+  presetButtons()?.forEach((button) => button.classList.remove("active"));
+}
+
+function filterByRange(
+  conversations: Conversation[],
+  counts: number[],
+): { conversations: Conversation[]; counts: number[] } {
+  const { from, to } = getDateRange();
+  if (!from && !to) return { conversations, counts };
+
+  const filteredConversations: Conversation[] = [];
+  const filteredCounts: number[] = [];
+
+  conversations.forEach((conversation, index) => {
+    const createdAt = new Date(conversation.created_at);
+    if (from && createdAt < from) return;
+    if (to && createdAt > to) return;
+    filteredConversations.push(conversation);
+    filteredCounts.push(counts[index] ?? 0);
+  });
+
+  return { conversations: filteredConversations, counts: filteredCounts };
+}
+
+function applyPreset(days: number): void {
+  if (days === 0) {
+    if (dateFromInput) dateFromInput.value = "";
+    if (dateToInput) dateToInput.value = "";
+    if (dateFromPicker) dateFromPicker.value = "";
+    if (dateToPicker) dateToPicker.value = "";
+  } else {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - days + 1);
+    if (dateFromInput) dateFromInput.value = formatDateInput(from);
+    if (dateToInput) dateToInput.value = formatDateInput(to);
+    if (dateFromPicker) dateFromPicker.value = formatDatePickerValue(from);
+    if (dateToPicker) dateToPicker.value = formatDatePickerValue(to);
+  }
+
+  rerenderChart();
+}
+
+function rerenderChart(): void {
+  const { conversations, counts } = filterByRange(
+    _allConversations,
+    _allCounts,
+  );
+  buildLegend(setChartPoints(conversations, counts));
+  drawChart(setChartPoints(conversations, counts), hoverIdx);
+}
+
+function applyFilters(): void {
+  rerenderChart();
 }
 
 function getTooltip(): HTMLDivElement {
@@ -128,6 +278,13 @@ function resizeCanvas(
 function buildLegend(points: ChartPoint[]): void {
   if (!chartLegend) return;
 
+  if (points.length === 0) {
+    chartLegend.innerHTML = `
+      <span class="chart-legend__item">Geen data in deze periode</span>
+    `;
+    return;
+  }
+
   const total = points.reduce((sum, point) => sum + point.value, 0);
   const maxPoint = points.reduce(
     (best, point) => (point.value > best.value ? point : best),
@@ -186,10 +343,11 @@ function drawChart(points: ChartPoint[], activeIndex = -1): void {
   ctx.stroke();
 
   if (points.length === 0) {
+    lastBarBounds = [];
     ctx.fillStyle = colors.text;
     ctx.font = '600 14px "Biryani", sans-serif';
     ctx.fillText(
-      "Nog geen statistieken beschikbaar",
+      "Geen data in deze periode",
       padding.left + 8,
       padding.top + 28,
     );
@@ -314,21 +472,74 @@ export function renderChart(
   conversations: Conversation[],
   counts: number[],
 ): void {
-  lastPoints = setChartPoints(conversations, counts);
-  buildLegend(lastPoints);
+  _allConversations = conversations;
+  _allCounts = counts;
   hoverIdx = -1;
-  drawChart(lastPoints, hoverIdx);
+  applyFilters();
 }
 
 export function refreshChart(
   conversations: Conversation[],
   counts: number[],
 ): void {
-  if (conversations.length > 0 && counts.length > 0) {
-    lastPoints = setChartPoints(conversations, counts);
-  }
-  buildLegend(lastPoints);
-  drawChart(lastPoints, hoverIdx);
+  _allConversations = conversations;
+  _allCounts = counts;
+  applyFilters();
+}
+
+export function initChartFilters(): void {
+  presetButtons()?.forEach((button) => {
+    button.addEventListener("click", () => {
+      presetButtons()?.forEach((preset) => preset.classList.remove("active"));
+      button.classList.add("active");
+      applyPreset(Number(button.dataset.days ?? "0"));
+    });
+  });
+
+  ["date-from", "date-to"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", () => {
+      presetButtons()?.forEach((preset) => preset.classList.remove("active"));
+      syncTextToPicker(dateFromInput, dateFromPicker);
+      syncTextToPicker(dateToInput, dateToPicker);
+      rerenderChart();
+    });
+  });
+
+  dateFromPicker?.addEventListener("change", () => {
+    syncPickerToText(dateFromPicker, dateFromInput);
+    presetButtons()?.forEach((preset) => preset.classList.remove("active"));
+    rerenderChart();
+  });
+
+  dateToPicker?.addEventListener("change", () => {
+    syncPickerToText(dateToPicker, dateToInput);
+    presetButtons()?.forEach((preset) => preset.classList.remove("active"));
+    rerenderChart();
+  });
+
+  chartFilters
+    ?.querySelectorAll<HTMLButtonElement>(".date-picker-btn")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        const pickerId = button.dataset.picker;
+        const picker = pickerId
+          ? (document.getElementById(pickerId) as HTMLInputElement | null)
+          : null;
+
+        if (!picker) return;
+
+        if (typeof picker.showPicker === "function") {
+          picker.showPicker();
+          return;
+        }
+
+        picker.focus();
+        picker.click();
+      });
+    });
+
+  setActivePreset(activePresetDays);
+  applyPreset(7);
 }
 
 function getPointFromMouseEvent(
@@ -385,13 +596,21 @@ if (chartCanvas) {
 
     if (found !== hoverIdx) {
       hoverIdx = found;
-      drawChart(lastPoints, hoverIdx);
+      const { conversations, counts } = filterByRange(
+        _allConversations,
+        _allCounts,
+      );
+      drawChart(setChartPoints(conversations, counts), hoverIdx);
     }
   });
 
   chartCanvas.addEventListener("mouseleave", () => {
     hoverIdx = -1;
-    drawChart(lastPoints, hoverIdx);
+    const { conversations, counts } = filterByRange(
+      _allConversations,
+      _allCounts,
+    );
+    drawChart(setChartPoints(conversations, counts), hoverIdx);
     hideTooltip();
     chartCanvas.style.cursor = "default";
   });
@@ -407,7 +626,13 @@ window.addEventListener("resize", () => {
 });
 
 document.addEventListener("chart:resize", () => {
-  drawChart(lastPoints, hoverIdx);
+  const { conversations, counts } = filterByRange(
+    _allConversations,
+    _allCounts,
+  );
+  drawChart(setChartPoints(conversations, counts), hoverIdx);
 });
+
+setActivePreset(activePresetDays);
 
 export {};
