@@ -1,3 +1,5 @@
+import { renderChart, refreshChart } from "./chart";
+
 const themeToggle = document.getElementById(
   "theme-toggle",
 ) as HTMLButtonElement;
@@ -21,6 +23,9 @@ interface Message {
 }
 
 type Theme = "dark" | "light";
+
+let _conversations: Conversation[] = [];
+let _counts: number[] = [];
 
 function getInitialTheme(): Theme {
   const stored = window.localStorage.getItem(themeStorageKey);
@@ -89,6 +94,10 @@ async function loadStats(): Promise<void> {
       maximumFractionDigits: 6,
     });
     statCost.textContent = formattedCost;
+
+    _conversations = conversations;
+    _counts = counts;
+    renderChart(conversations, counts);
   } catch (err) {
     console.error("Stats konden niet worden geladen:", err);
     setError();
@@ -99,9 +108,14 @@ themeToggle.addEventListener("click", () => {
   const next: Theme =
     document.body.dataset.theme === "light" ? "dark" : "light";
   applyTheme(next);
+  refreshChart(_conversations, _counts);
 });
 
 refreshBtn.addEventListener("click", loadStats);
+
+document.addEventListener("chart:resize", () => {
+  refreshChart(_conversations, _counts);
+});
 
 applyTheme(getInitialTheme());
 loadStats();
