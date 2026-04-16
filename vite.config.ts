@@ -9,8 +9,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "src/client/index.html",
-        dashboard: "src/client/dashboard.html",
-        dashboard2: "src/client/dashboard_2.html",
+        dashboard: "src/client/chats.html",
+        dashboard_2: "src/client/overzicht.html",
       },
     },
   },
