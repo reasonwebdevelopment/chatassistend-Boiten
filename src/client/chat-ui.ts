@@ -71,7 +71,10 @@ class ChatUI {
     });
   }
 
-  private _addMessage(text: string, sender: MessageSender = "bot"): HTMLDivElement {
+  private _addMessage(
+    text: string,
+    sender: MessageSender = "bot",
+  ): HTMLDivElement {
     const wrapper = document.createElement("div");
     wrapper.classList.add("chat-message", `chat-message--${sender}`);
 
@@ -93,7 +96,11 @@ class ChatUI {
 
   private _showTyping(): HTMLDivElement {
     const wrapper = document.createElement("div");
-    wrapper.classList.add("chat-message", "chat-message--bot", "typing-indicator");
+    wrapper.classList.add(
+      "chat-message",
+      "chat-message--bot",
+      "typing-indicator",
+    );
 
     const bubble = document.createElement("div");
     bubble.classList.add("chat-message__bubble");
