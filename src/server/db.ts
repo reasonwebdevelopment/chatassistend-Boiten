@@ -2,49 +2,82 @@ import mysql from "mysql2/promise";
 
 export class Database {
   private pool: mysql.Pool;
+  private dbName: string;
 
   constructor() {
+    this.dbName = process.env.DB_NAME ?? "chatbot";
+    // Pool ZONDER database naam, zodat we eerst de database kunnen creëren
     this.pool = mysql.createPool({
       host: process.env.DB_HOST ?? "localhost",
       user: process.env.DB_USER ?? "root",
       password: process.env.DB_PASS ?? "",
-      database: process.env.DB_NAME ?? "chatbot",
       waitForConnections: true,
     });
-    console.log("Database pool aangemaakt.");
+    console.log(`Database pool aangemaakt (database: ${this.dbName})`);
   }
 
   async init(): Promise<void> {
-    await this.pool.execute(`
-      CREATE TABLE IF NOT EXISTS conversations (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log("Tabel 'conversations' klaar.");
+    let connection;
+    try {
+      console.log("Verbinden met MySQL...");
+      connection = await this.pool.getConnection();
+      console.log("✓ MySQL verbinding geslaagd.");
 
-    await this.pool.execute(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        conversation_id INT NOT NULL,
-        role ENUM('user','assistant') NOT NULL,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (conversation_id) REFERENCES conversations(id)
-      )
-    `);
+      // Database aanmaken als die niet bestaat
+      console.log(`Database '${this.dbName}' aanmaken...`);
+      await connection.query(
+        `CREATE DATABASE IF NOT EXISTS \`${this.dbName}\``,
+      );
+      console.log(`✓ Database '${this.dbName}' klaar.`);
 
-    await this.pool.execute(`
-      CREATE TABLE IF NOT EXISTS usage_logs (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        conversation_id INT NOT NULL,
-        tokens INT NOT NULL DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (conversation_id) REFERENCES conversations(id)
-      )
-    `);
-    console.log("Database klaar.");
-    console.log("Database init compleet.");
+      // Database selecteren (met query, niet execute)
+      await connection.query(`USE \`${this.dbName}\``);
+      console.log(`✓ Database '${this.dbName}' geselecteerd.`);
+
+      // Tabellen aanmaken
+      console.log("Tabel 'conversations' aanmaken...");
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS conversations (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log("✓ Tabel 'conversations' klaar.");
+
+      console.log("Tabel 'messages' aanmaken...");
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS messages (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          conversation_id INT NOT NULL,
+          role ENUM('user','assistant') NOT NULL,
+          content TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+        )
+      `);
+      console.log("✓ Tabel 'messages' klaar.");
+
+      console.log("Tabel 'usage_logs' aanmaken...");
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS usage_logs (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          conversation_id INT NOT NULL,
+          tokens INT NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+        )
+      `);
+      console.log("✓ Tabel 'usage_logs' klaar.");
+      console.log("✓ Database init compleet.");
+    } catch (error) {
+      console.error("❌ Fout bij aanmaken van database/tabellen:");
+      console.error(error);
+      throw error;
+    } finally {
+      if (connection) {
+        connection.release();
+      }
+    }
   }
 
   async createConversation(): Promise<number> {

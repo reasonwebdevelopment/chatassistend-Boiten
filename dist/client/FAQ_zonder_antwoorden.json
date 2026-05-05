@@ -1,0 +1,124 @@
+{
+  "faq": [
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Kan ik een betalingsregeling treffen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Ik kan het openstaande bedrag niet in een keer betalen. Wat zijn mijn opties?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Ik heb al betaald. Hoe kan ik dit bevestigen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Kan ik uitstel van betaling aanvragen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Hoeveel moet ik nog betalen? Wat is mijn restschuld?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BETALINGSREGELING",
+      "vraag": "Ik ben in financiele problemen. Kan ik minder betalen dan het gevraagde bedrag?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BESLAG",
+      "vraag": "Er is beslag gelegd op mijn inkomen. Namens wie en voor welk bedrag?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BESLAG",
+      "vraag": "Er is beslag gelegd op mijn auto. Kan dat opgeheven worden?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BESLAG",
+      "vraag": "Ik heb al betaald maar het beslag is nog actief. Wat moet ik doen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "BESLAG",
+      "vraag": "Ik heb nooit post ontvangen, maar er is wel beslag gelegd. Hoe kan dat?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "VVE",
+      "vraag": "Ik heb een incassobrief ontvangen van de VvE. Wat moet ik doen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "VVE",
+      "vraag": "Ik betwist de achterstand bij de VvE - ik heb wel betaald.",
+      "antwoord": ""
+    },
+    {
+      "categorie": "VVE",
+      "vraag": "Wat staat er nog open bij de VvE en wat moet ik per maand betalen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "DOSSIER_EN_INFO",
+      "vraag": "Ik heb geen dossiernummer. Hoe vind ik mijn dossier?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "DOSSIER_EN_INFO",
+      "vraag": "Kan ik inzage krijgen in mijn dossier?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "DOSSIER_EN_INFO",
+      "vraag": "Ik heb een verdachte e-mail ontvangen namens jullie. Is die echt?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "DOSSIER_EN_INFO",
+      "vraag": "Ik spreek geen Nederlands. Kunnen jullie mij helpen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "JURIDISCH",
+      "vraag": "Ik heb een concept-dagvaarding klaarstaan. Naar welk adres stuur ik die?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "JURIDISCH",
+      "vraag": "Kunnen jullie een dagvaarding voor mij betekenen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "JURIDISCH",
+      "vraag": "Ik wil een buitenlands vonnis laten uitvoeren in Nederland. Hoe werkt dat?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "JURIDISCH",
+      "vraag": "Iemand betaalt mij niet terug. Kunnen jullie helpen om het geld terug te krijgen?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "OVERIG",
+      "vraag": "Ik woon niet meer op het adres waarnaar jullie schrijven. Hoe update ik mijn gegevens?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "OVERIG",
+      "vraag": "Geven jullie nog trainingen over incasso en debiteurbeheer?",
+      "antwoord": ""
+    },
+    {
+      "categorie": "OVERIG",
+      "vraag": "Mijn dossier is volledig betaald. Wordt het nu gesloten?",
+      "antwoord": ""
+    }
+  ]
+}
