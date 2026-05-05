@@ -80,6 +80,19 @@ export class Database {
       `);
       console.log("✓ Tabel 'monthly_estimates' klaar.");
       console.log("✓ Database init compleet.");
+
+      // Herbouw de pool met een vaste database, zodat alle volgende queries
+      // dezelfde database gebruiken als de init-connection.
+      this.pool = mysql.createPool({
+        host: process.env.DB_HOST ?? "localhost",
+        user: process.env.DB_USER ?? "root",
+        password: process.env.DB_PASS ?? "",
+        database: this.dbName,
+        waitForConnections: true,
+      });
+      console.log(
+        `✓ Database pool opnieuw aangemaakt met database '${this.dbName}'`,
+      );
     } catch (error) {
       console.error("❌ Fout bij aanmaken van database/tabellen:");
       console.error(error);
