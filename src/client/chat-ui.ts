@@ -12,6 +12,7 @@ class ChatUI {
   private readonly messages: HTMLElement;
   private readonly input: HTMLInputElement;
   private readonly sendBtn: HTMLButtonElement;
+  private readonly quickQuestionBtns: HTMLButtonElement[];
   private readonly closeBtn: HTMLButtonElement;
 
   constructor(assistantInstance: ChatAssistantInstance) {
@@ -22,6 +23,11 @@ class ChatUI {
     this.messages = ChatUI._requireElement("chatMessages");
     this.input = ChatUI._requireElement<HTMLInputElement>("chatInput");
     this.sendBtn = ChatUI._requireElement<HTMLButtonElement>("chatSend");
+    this.quickQuestionBtns = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        ".chat-popup__quick-question",
+      ),
+    );
     this.closeBtn = ChatUI._requireElement<HTMLButtonElement>("chatClose");
 
     this._bindEvents();
@@ -39,6 +45,13 @@ class ChatUI {
     this.bubble.addEventListener("click", () => this.toggle());
     this.closeBtn.addEventListener("click", () => this.close());
     this.sendBtn.addEventListener("click", () => this._handleSend());
+    this.quickQuestionBtns.forEach((button) => {
+      button.addEventListener("click", () => {
+        void this._handleSend(
+          button.dataset.question ?? button.textContent ?? "",
+        );
+      });
+    });
 
     this.input.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -132,13 +145,16 @@ class ChatUI {
     this.messages.scrollTop = this.messages.scrollHeight;
   }
 
-  private async _handleSend(): Promise<void> {
-    const text = this.input.value.trim();
+  private async _handleSend(textOverride?: string): Promise<void> {
+    const text = (textOverride ?? this.input.value).trim();
     if (!text) return;
 
     this.input.value = "";
     this.input.disabled = true;
     this.sendBtn.disabled = true;
+    this.quickQuestionBtns.forEach((button) => {
+      button.disabled = true;
+    });
 
     this._addMessage(text, "user");
 
@@ -150,6 +166,9 @@ class ChatUI {
 
     this.input.disabled = false;
     this.sendBtn.disabled = false;
+    this.quickQuestionBtns.forEach((button) => {
+      button.disabled = false;
+    });
     this.input.focus();
   }
 }
