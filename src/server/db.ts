@@ -68,6 +68,17 @@ export class Database {
         )
       `);
       console.log("✓ Tabel 'usage_logs' klaar.");
+      console.log("Tabel 'monthly_estimates' aanmaken...");
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS monthly_estimates (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          month VARCHAR(16) NOT NULL,
+          total_tokens BIGINT NOT NULL DEFAULT 0,
+          cost DECIMAL(12,6) NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log("✓ Tabel 'monthly_estimates' klaar.");
       console.log("✓ Database init compleet.");
     } catch (error) {
       console.error("❌ Fout bij aanmaken van database/tabellen:");
@@ -137,6 +148,36 @@ export class Database {
       "INSERT INTO usage_logs (conversation_id, tokens) VALUES (?, ?)",
       [conversationId, tokens],
     );
+  }
+
+  async saveMonthlyEstimate(
+    month: string,
+    totalTokens: number,
+    cost: number,
+  ): Promise<void> {
+    await this.pool.execute(
+      "INSERT INTO monthly_estimates (month, total_tokens, cost) VALUES (?, ?, ?)",
+      [month, totalTokens, cost],
+    );
+  }
+
+  async getLatestMonthlyEstimate(): Promise<{
+    month: string;
+    total_tokens: number;
+    cost: number;
+    created_at: string;
+  } | null> {
+    const [rows] = await this.pool.execute(
+      "SELECT month, total_tokens, cost, created_at FROM monthly_estimates ORDER BY created_at DESC LIMIT 1",
+    );
+    const firstRow = (rows as any[])[0];
+    if (!firstRow) return null;
+    return {
+      month: firstRow.month,
+      total_tokens: Number(firstRow.total_tokens),
+      cost: Number(firstRow.cost),
+      created_at: firstRow.created_at,
+    };
   }
 
   async getTotalUsageTokens(): Promise<number> {

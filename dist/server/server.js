@@ -46,6 +46,20 @@ class Server {
             mistral.setSiteContent(scraper.getContent());
             const chatRouter = new ChatRouter(mistral, db);
             this.app.use("/api", chatRouter.router);
+            // Endpoint voor huidige maandelijkse kosten-schatting (berekent op verzoek)
+            this.app.get("/api/usage/monthly", async (_req, res) => {
+                try {
+                    const totalTokens = await db.getTotalUsageTokens();
+                    const pricePerMillionTokens = 0.0015;
+                    const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
+                    const now = new Date();
+                    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+                    res.json({ month, total_tokens: totalTokens, cost });
+                }
+                catch (err) {
+                    res.status(500).json({ error: "Kon kosten niet berekenen." });
+                }
+            });
             this.app.listen(this.port, () => console.log(`✓ Server draait op http://localhost:${this.port}`));
         }
         catch (error) {

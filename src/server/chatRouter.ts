@@ -63,9 +63,12 @@ export class ChatRouter {
 
     this.router.get("/conversations", async (_req: Request, res: Response) => {
       try {
+        console.log("[API] /conversations endpoint aanroepen...");
         const conversations = await this.db.getConversations();
+        console.log("[API] Conversations count:", conversations.length);
         res.json(conversations);
       } catch (error) {
+        console.error("[API] Fout bij /conversations:", error);
         res.status(500).json({ error: "Kon gesprekken niet ophalen." });
       }
     });
@@ -94,15 +97,19 @@ export class ChatRouter {
 
     this.router.get("/usage", async (_req: Request, res: Response) => {
       try {
+        console.log("[API] /usage endpoint aanroepen...");
         const totalTokens = await this.db.getTotalUsageTokens();
+        console.log("[API] Total tokens:", totalTokens);
         const pricePerMillionTokens = 0.0015;
         const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
+        console.log("[API] Cost:", cost);
 
         res.json({
           total_tokens: totalTokens,
           cost,
         });
-      } catch (_error) {
+      } catch (error) {
+        console.error("[API] Fout bij /usage:", error);
         res.status(500).json({ error: "Kon usage statistieken niet ophalen." });
       }
     });
