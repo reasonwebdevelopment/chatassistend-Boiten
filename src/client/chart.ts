@@ -56,9 +56,9 @@ function chartColors() {
     bg: isLight ? "rgba(255,255,255,0.95)" : "rgba(21,24,32,0.95)",
     grid: isLight ? "rgba(31,35,43,0.08)" : "rgba(226,232,240,0.08)",
     axis: isLight ? "rgba(31,35,43,0.28)" : "rgba(226,232,240,0.28)",
-    line: isLight ? "#2f6df6" : "#4f8ef7",
-    fillTop: isLight ? "rgba(47,109,246,0.24)" : "rgba(79,142,247,0.28)",
-    fillBottom: isLight ? "rgba(47,109,246,0.02)" : "rgba(79,142,247,0.02)",
+    line: "#533a92",
+    fillTop: "rgba(83,58,146,0.28)",
+    fillBottom: "rgba(83,58,146,0.08)",
     point: isLight ? "#1f232b" : "#e2e8f0",
     text: isLight ? "#667085" : "#8892a4",
     tooltipBg: isLight ? "rgba(255,255,255,0.98)" : "rgba(21,24,32,0.98)",
@@ -384,7 +384,7 @@ function drawChart(points: ChartPoint[], activeIndex = -1): void {
 
     if (isActive) {
       ctx.save();
-      ctx.shadowColor = "rgba(79, 142, 247, 0.35)";
+      ctx.shadowColor = "rgba(83, 58, 146, 0.35)";
       ctx.shadowBlur = 18;
       ctx.fillStyle = colors.line;
       ctx.globalAlpha = 0.18;

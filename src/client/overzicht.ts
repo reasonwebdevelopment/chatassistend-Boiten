@@ -83,21 +83,26 @@ async function loadStats(): Promise<void> {
     const total = counts.reduce((acc, n) => acc + n, 0);
     statMsgs.textContent = total.toLocaleString("nl-NL");
 
-    const usageRes = await fetch("/api/usage");
-    if (!usageRes.ok) throw new Error(`API fout: ${usageRes.status}`);
-
-    const usage: { cost?: number } = await usageRes.json();
-    const formattedCost = (usage.cost ?? 0).toLocaleString("nl-NL", {
-      style: "currency",
-      currency: "EUR",
-      minimumFractionDigits: 4,
-      maximumFractionDigits: 6,
-    });
-    statCost.textContent = formattedCost;
-
     _conversations = conversations;
     _counts = counts;
     renderChart(conversations, counts);
+
+    try {
+      const usageRes = await fetch("/api/usage");
+      if (!usageRes.ok) throw new Error(`API fout: ${usageRes.status}`);
+
+      const usage: { cost?: number } = await usageRes.json();
+      const formattedCost = (usage.cost ?? 0).toLocaleString("nl-NL", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 6,
+      });
+      statCost.textContent = formattedCost;
+    } catch (usageErr) {
+      console.error("Kosten konden niet worden geladen:", usageErr);
+      statCost.innerHTML = '<span class="error-msg">—</span>';
+    }
   } catch (err) {
     console.error("Stats konden niet worden geladen:", err);
     setError();
