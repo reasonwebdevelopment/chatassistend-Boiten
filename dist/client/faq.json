@@ -1,6 +1,58 @@
 {
   "faq": [
     {
+      "vraag": "Wat doet BoitenLuhrs precies?",
+      "antwoord": "BoitenLuhrs is een incasso- en gerechtsdeurwaarderskantoor. Wij innen openstaande vorderingen namens onze opdrachtgevers, zoals bedrijven, VvE's en andere organisaties. Wij begeleiden het gehele traject: van de eerste aanmaning tot en met gerechtelijke procedures en beslaglegging indien nodig."
+    },
+    {
+      "vraag": "Voor welke soorten opdrachtgevers werkt BoitenLuhrs?",
+      "antwoord": "BoitenLuhrs werkt voor uiteenlopende opdrachtgevers, waaronder Verenigingen van Eigenaren (VvE's), bedrijven, verhuurders en andere organisaties die openstaande vorderingen willen innen."
+    },
+    {
+      "vraag": "Wat is het verschil tussen BoitenLuhrs en een gewoon incassobureau?",
+      "antwoord": "BoitenLuhrs is zowel een incassobureau als een gerechtsdeurwaarderskantoor. Een gewoon incassobureau kan geen gerechtelijke stappen ondernemen. Doordat wij ook gerechtsdeurwaarders in huis hebben, kunnen wij het volledige traject voor u afhandelen: van de eerste aanmaning tot en met beslaglegging na een rechterlijk vonnis."
+    },
+    {
+      "vraag": "Hoe verloopt het incassotraject bij BoitenLuhrs?",
+      "antwoord": "Het traject begint met een minnelijke fase: wij sturen u een brief of e-mail om u te informeren over de openstaande vordering. Als er geen betaling of reactie volgt, kan de zaak worden voorgelegd aan de rechter. Beslist de rechter in het nadeel van de debiteur, dan kan een gerechtsdeurwaarder overgaan tot beslaglegging. BoitenLuhrs begeleidt elk van deze stappen."
+    },
+    {
+      "vraag": "Waar is BoitenLuhrs gevestigd?",
+      "antwoord": "Ons postadres is Postbus 45608, 2504 BA 's-Gravenhage. Wij hebben meerdere vestigingen. Voor het dichtstbijzijnde kantoor kunt u contact met ons opnemen via 088-999 36 66 of info@boitenluhrs.nl."
+    },
+    {
+      "vraag": "Hoe kan ik BoitenLuhrs bereiken?",
+      "antwoord": "U kunt ons bereiken via telefoon op 088-999 36 66, per e-mail via info@boitenluhrs.nl, via uw persoonlijke pagina op www.boitenluhrs.nl/login, of per post naar Postbus 45608, 2504 BA 's-Gravenhage."
+    },
+    {
+      "vraag": "Is BoitenLuhrs een betrouwbaar bedrijf?",
+      "antwoord": "Ja. BoitenLuhrs is een erkend incasso- en gerechtsdeurwaarderskantoor. Onze gerechtsdeurwaarders zijn beëdigde openbare ambtenaren die onpartijdig en onafhankelijk werken, onder toezicht van de Koninklijke Beroepsorganisatie van Gerechtsdeurwaarders (KBvG)."
+    },
+    {
+      "vraag": "Werkt BoitenLuhrs ook samen met schuldhulpverlening?",
+      "antwoord": "Ja. Indien u in een schuldhulpverleningstraject zit, werken wij samen met de betreffende instantie. Deze moet wel zijn aangesloten bij de NVVK of haar diensten gratis aanbieden. Neem contact met ons op en informeer uw schuldhulpverlener om ons direct te benaderen."
+    },
+    {
+      "vraag": "Handelt BoitenLuhrs ook juridische procedures af?",
+      "antwoord": "Ja. Als het minnelijke incassotraject niet tot betaling leidt, kan BoitenLuhrs een gerechtelijke procedure starten. Onze gerechtsdeurwaarders kunnen vervolgens een vonnis ten uitvoer leggen, bijvoorbeeld via loonbeslag of bankbeslag."
+    },
+    {
+      "vraag": "Mag BoitenLuhrs extra kosten in rekening brengen?",
+      "antwoord": "Ja, maar alleen binnen de wettelijke kaders. Bij niet tijdig betalen kunnen incassokosten worden berekend op basis van de Wet Incassokosten (WIK). Eventuele gerechtelijke kosten, zoals griffierecht en deurwaarderskosten, worden apart in rekening gebracht."
+    },
+    {
+      "vraag": "Wat is de Wet Incassokosten (WIK) en hoe beïnvloedt dit mij?",
+      "antwoord": "De Wet Incassokosten (WIK) regelt hoeveel incassokosten een schuldeiser maximaal in rekening mag brengen bij een consument. De kosten worden berekend als een percentage van de openstaande vordering, met een wettelijk bepaald minimum en maximum. BoitenLuhrs houdt zich aan deze wettelijke regels."
+    },
+    {
+      "vraag": "Gaat BoitenLuhrs zorgvuldig om met mijn persoonsgegevens?",
+      "antwoord": "Ja. BoitenLuhrs verwerkt uw persoonsgegevens zorgvuldig en conform de Algemene Verordening Gegevensbescherming (AVG). Wij delen uw gegevens niet met derden buiten het kader van de incassoprocedure."
+    },
+    {
+      "vraag": "Wat is het doel van BoitenLuhrs als ik een brief ontvang?",
+      "antwoord": "Als u een brief of e-mail van BoitenLuhrs ontvangt, betekent dit dat een van onze opdrachtgevers een openstaande vordering op u heeft en ons heeft ingeschakeld om dit te innen. Ons doel is in eerste instantie altijd om samen met u tot een passende oplossing te komen, zonder dat het tot verdere juridische stappen hoeft te komen."
+    },
+    {
       "vraag": "Wie ben jij?",
       "antwoord": "Ik ben een AI-assistent ontwikkeld door BoitenLuhrs. Ik help u met vragen over onze diensten en producten."
     },

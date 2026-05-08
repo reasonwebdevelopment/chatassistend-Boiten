@@ -94,6 +94,8 @@ class FAQLoader {
 class AIClient {
   private readonly proxyUrl: string;
   private conversationId: number | null = null; // Onthoudt het gesprek
+  private readonly fallbackMessage =
+    "Er ging iets mis gegaan. Probeer het later opnieuw.";
 
   constructor(proxyUrl: string) {
     this.proxyUrl = proxyUrl;
@@ -136,13 +138,8 @@ class AIClient {
 
       return data.reply ?? "Sorry, ik kon geen antwoord vinden.";
     } catch (error) {
-      if (error instanceof TypeError) {
-        console.warn("Geen server bereikbaar, mock antwoord wordt gebruikt.");
-        return `Je vroeg: "${message}" — de AI server draait nog niet. Start 'node server/server.js' voor echte antwoorden.`;
-      }
-
-      const message_ = error instanceof Error ? error.message : String(error);
-      return `Sorry, ${message_}`;
+      console.warn("AI-antwoord kon niet worden opgehaald:", error);
+      return this.fallbackMessage;
     }
   }
 }

@@ -411,8 +411,8 @@ body {
   position: fixed;
   bottom: 5.5rem;
   right: 2rem;
-  width: 360px;
-  max-height: 520px;
+  width: 440px;
+  max-height: 640px;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
@@ -669,13 +669,17 @@ body {
 
 /* Footer */
 .chat-popup__quick-questions {
-  display: flex;
-  flex-wrap: nowrap; /* forceer één regel */
-  gap: 0.5rem;
-  padding: 0 1rem 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding: 0 1rem 0.85rem;
   border-top: 1px solid rgba(228, 226, 218, 0.7);
-  align-items: center;
+  align-items: stretch;
   padding-top: 15px; /* compenseer border */
+}
+
+.chat-popup__quick-questions.is-hidden {
+  display: none;
 }
 
 .chat-popup__quick-question {
@@ -698,8 +702,7 @@ body {
     background 0.2s,
     border-color 0.2s,
     opacity 0.2s;
-  flex: 1 1 0; /* gelijkmatige breedte */
-  min-width: 0; /* laat knoppen krimpen binnen flex-container */
+  width: 100%;
   text-align: center;
   height: 40px; /* gelijk aan input-ish hoogte */
   display: inline-flex;
@@ -932,8 +935,6 @@ body {
 
   .chat-popup__quick-questions {
     padding: 0 1rem 0.6rem;
-    /* op zeer smalle schermen: toestaan dat content schuift in plaats van breekt */
-    overflow-x: auto;
     gap: 0.6rem;
   }
 

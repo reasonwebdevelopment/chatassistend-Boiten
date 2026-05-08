@@ -13,6 +13,7 @@ class ChatUI {
   private readonly input: HTMLInputElement;
   private readonly sendBtn: HTMLButtonElement;
   private readonly quickQuestionBtns: HTMLButtonElement[];
+  private readonly quickQuestionsWrap: HTMLElement | null;
   private readonly closeBtn: HTMLButtonElement;
 
   constructor(assistantInstance: ChatAssistantInstance) {
@@ -27,6 +28,9 @@ class ChatUI {
       document.querySelectorAll<HTMLButtonElement>(
         ".chat-popup__quick-question",
       ),
+    );
+    this.quickQuestionsWrap = document.querySelector<HTMLElement>(
+      ".chat-popup__quick-questions",
     );
     this.closeBtn = ChatUI._requireElement<HTMLButtonElement>("chatClose");
 
@@ -47,6 +51,7 @@ class ChatUI {
     this.sendBtn.addEventListener("click", () => this._handleSend());
     this.quickQuestionBtns.forEach((button) => {
       button.addEventListener("click", () => {
+        this._hideQuickQuestions();
         void this._handleSend(
           button.dataset.question ?? button.textContent ?? "",
         );
@@ -76,6 +81,12 @@ class ChatUI {
     this.popup.classList.remove("is-open");
     this.popup.setAttribute("aria-hidden", "true");
     this.bubble.classList.remove("is-open");
+  }
+
+  private _hideQuickQuestions(): void {
+    if (!this.quickQuestionsWrap) return;
+    this.quickQuestionsWrap.classList.add("is-hidden");
+    this.quickQuestionsWrap.setAttribute("aria-hidden", "true");
   }
 
   private _getTime(): string {
@@ -166,9 +177,13 @@ class ChatUI {
 
     this.input.disabled = false;
     this.sendBtn.disabled = false;
-    this.quickQuestionBtns.forEach((button) => {
-      button.disabled = false;
-    });
+    // Snelknoppen verdwijnen zodra er één gekozen is.
+    // (Als ze verborgen zijn, hoeven we ze ook niet meer te her-activeren.)
+    if (!this.quickQuestionsWrap?.classList.contains("is-hidden")) {
+      this.quickQuestionBtns.forEach((button) => {
+        button.disabled = false;
+      });
+    }
     this.input.focus();
   }
 }
