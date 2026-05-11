@@ -24,6 +24,14 @@ class FAQLoader {
     this.faqUrl = faqUrl;
   }
 
+  private _tokenize(text: string): string[] {
+    return text
+      .toLowerCase()
+      .trim()
+      .match(/[\p{L}\p{N}]+/gu)
+      ?.filter(Boolean) ?? [];
+  }
+
   async load(): Promise<FAQItem[]> {
     if (this.faqData) return this.faqData;
 
@@ -48,7 +56,12 @@ class FAQLoader {
   findAnswer(userInput: string): FAQItem | undefined {
     if (!this.faqData || this.faqData.length === 0) return undefined;
 
-    const input = userInput.toLowerCase();
+    const inputTokens = this._tokenize(userInput);
+    const inputText = inputTokens.join(" ");
+    const inputTokenSet = new Set(inputTokens);
+
+    // Bij lange (dossier)teksten is FAQ matching vaak een false positive.
+    if (inputText.length > 140) return undefined;
 
     const STOP_WORDS = new Set([
       "de",
@@ -65,20 +78,20 @@ class FAQLoader {
       "in",
       "te",
     ]);
-    const MIN_SCORE = 0.3;
+    const MIN_SCORE = 0.45;
 
     let bestMatch: FAQItem | undefined;
     let bestScore = 0;
 
     for (const item of this.faqData) {
-      const words = item.vraag
-        .toLowerCase()
-        .split(" ")
-        .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+      const words = this._tokenize(item.vraag).filter(
+        (w) => w.length > 2 && !STOP_WORDS.has(w),
+      );
 
       if (words.length === 0) continue;
 
-      const matches = words.filter((word) => input.includes(word));
+      // Match op token-niveau (niet op substring) om "ben" in "bent" te voorkomen.
+      const matches = words.filter((word) => inputTokenSet.has(word));
       const score = matches.length / words.length;
 
       if (score > bestScore) {
@@ -87,7 +100,21 @@ class FAQLoader {
       }
     }
 
-    return bestScore >= MIN_SCORE ? bestMatch : undefined;
+    // Extra guard: vereis minimaal 2 token matches om one-word false positives te vermijden.
+    if (!bestMatch) return undefined;
+    const bestWords = this._tokenize(bestMatch.vraag).filter(
+      (w) => w.length > 2 && !STOP_WORDS.has(w),
+    );
+    const bestMatches = bestWords.filter((w) => inputTokenSet.has(w));
+
+    // Allow strong single-token queries (e.g. "bent") to match relevant FAQs,
+    // while still guarding longer inputs against one-word false positives.
+    const isSingleTokenQuery = inputTokens.length === 1;
+    const strongSingleTokenMatch = isSingleTokenQuery && bestMatches.length >= 1;
+
+    return bestScore >= MIN_SCORE && (bestMatches.length >= 2 || strongSingleTokenMatch)
+      ? bestMatch
+      : undefined;
   }
 }
 

@@ -160,6 +160,9 @@ class ChatUI {
     const text = (textOverride ?? this.input.value).trim();
     if (!text) return;
 
+    // Snelvragen verdwijnen zodra de gebruiker zelf een vraag stelt
+    this._hideQuickQuestions();
+
     this.input.value = "";
     this.input.disabled = true;
     this.sendBtn.disabled = true;

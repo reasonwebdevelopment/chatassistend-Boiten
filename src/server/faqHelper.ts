@@ -9,6 +9,14 @@ interface FAQData {
 
 let faqCache: FAQItem[] | null = null;
 
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ");
+}
+
 async function loadFAQ(): Promise<FAQItem[]> {
   if (faqCache) return faqCache;
 
@@ -33,16 +41,34 @@ async function loadFAQ(): Promise<FAQItem[]> {
 
 export async function findAnswerInDB(message: string): Promise<string | null> {
   const faqItems = await loadFAQ();
-  const messageLower = message.toLowerCase();
+  const messageNorm = normalize(message);
 
-  // Zoek naar match in FAQ-vragen
+  if (!messageNorm) return null;
+
+  // Bij lange (dossier)teksten is "contains" matching onbetrouwbaar.
+  // Sta alleen exacte/zeer-dichte match toe.
+  const isLongMessage = messageNorm.length > 140;
+
   for (const item of faqItems) {
-    const vraagLower = item.vraag.toLowerCase();
-    if (
-      vraagLower.includes(messageLower) ||
-      messageLower.includes(vraagLower)
-    ) {
+    const vraagNorm = normalize(item.vraag);
+    if (!vraagNorm) continue;
+
+    // Exacte match
+    if (vraagNorm === messageNorm) {
       return item.antwoord;
+    }
+
+    // Voor korte vragen: sta substring match toe, maar alleen als de overlap substantieel is.
+    if (!isLongMessage) {
+      const minLen = Math.min(vraagNorm.length, messageNorm.length);
+      const substantial = minLen >= 10;
+
+      if (
+        substantial &&
+        (vraagNorm.includes(messageNorm) || messageNorm.includes(vraagNorm))
+      ) {
+      return item.antwoord;
+      }
     }
   }
 

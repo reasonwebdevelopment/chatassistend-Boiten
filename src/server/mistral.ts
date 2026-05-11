@@ -48,6 +48,8 @@ Als het antwoord er niet in staat, zeg dan: "Ik weet dat niet zeker. Neem contac
 Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
 Gebruik markdown, sterretjes, opsommingstekens.
+als je het antwoord niet weet, verwijs door naar de contactpagina.
+als iemand vraagt op persoonlijke informatie, zeg dan dat wij die niet kunnen geven, verwijs door naar de contactpagina.
 Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.${contextSection}`,
         },
         ...history,
