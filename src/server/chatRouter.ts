@@ -6,6 +6,7 @@ import { isRelevant } from "./keywords.js";
 interface ChatRequestBody {
   message?: unknown;
   conversation_id?: unknown;
+  faq_context?: unknown;
 }
 
 export class ChatRouter {
@@ -21,12 +22,18 @@ export class ChatRouter {
   private _registerRoutes() {
     this.router.post("/chat", async (req: Request, res: Response) => {
       const { conversation_id } = req.body as ChatRequestBody;
+      const { faq_context } = req.body as ChatRequestBody;
       const userMessage = req.body.message;
 
       if (!userMessage || typeof userMessage !== "string") {
         res.status(400).json({ error: "Geen geldig bericht ontvangen." });
         return;
       }
+
+      const faqContext =
+        typeof faq_context === "string" && faq_context.trim().length > 0
+          ? faq_context
+          : undefined;
 
       if (!isRelevant(userMessage)) {
         res.json({
@@ -45,7 +52,7 @@ export class ChatRouter {
 
         const history = await this.db.getHistory(convId);
         const { reply: aiResponse, totalTokens } =
-          await this.aiProxy.forwardMessage(history);
+          await this.aiProxy.forwardMessage(history, { faqContext });
 
         await this.db.saveMessage(convId, "assistant", aiResponse);
         await this.db.saveUsageLog(convId, totalTokens);

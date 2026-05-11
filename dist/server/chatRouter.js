@@ -12,11 +12,15 @@ export class ChatRouter {
     _registerRoutes() {
         this.router.post("/chat", async (req, res) => {
             const { conversation_id } = req.body;
+            const { faq_context } = req.body;
             const userMessage = req.body.message;
             if (!userMessage || typeof userMessage !== "string") {
                 res.status(400).json({ error: "Geen geldig bericht ontvangen." });
                 return;
             }
+            const faqContext = typeof faq_context === "string" && faq_context.trim().length > 0
+                ? faq_context
+                : undefined;
             if (!isRelevant(userMessage)) {
                 res.json({
                     reply: "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor BoitenLuhrs, zoals over incasso, vorderingen of betalingen.",
@@ -29,7 +33,7 @@ export class ChatRouter {
                     : await this.db.createConversation();
                 await this.db.saveMessage(convId, "user", userMessage);
                 const history = await this.db.getHistory(convId);
-                const { reply: aiResponse, totalTokens } = await this.aiProxy.forwardMessage(history);
+                const { reply: aiResponse, totalTokens } = await this.aiProxy.forwardMessage(history, { faqContext });
                 await this.db.saveMessage(convId, "assistant", aiResponse);
                 await this.db.saveUsageLog(convId, totalTokens);
                 res.json({ reply: aiResponse, conversation_id: convId });

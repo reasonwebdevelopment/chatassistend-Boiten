@@ -101,7 +101,7 @@ class AIClient {
     this.proxyUrl = proxyUrl;
   }
 
-  async getResponse(message: string): Promise<string> {
+  async getResponse(message: string, faqContext?: string): Promise<string> {
     try {
       const response = await fetch(this.proxyUrl, {
         method: "POST",
@@ -111,6 +111,7 @@ class AIClient {
         body: JSON.stringify({
           message,
           conversation_id: this.conversationId, // Stuur mee als die er al is
+          faq_context: faqContext,
         }),
       });
 
@@ -163,12 +164,15 @@ class ChatAssistant {
 
     const faqMatch = this.faqLoader.findAnswer(userInput);
 
-    if (faqMatch) {
+    const faqContext = faqMatch
+      ? `FAQ match (meest passend):\n- Vraag: ${faqMatch.vraag}\n- Antwoord: ${faqMatch.antwoord}`
+      : undefined;
+
+    if (faqContext) {
       await this._fakeDelay();
-      return faqMatch.antwoord;
     }
 
-    return this.aiClient.getResponse(userInput);
+    return this.aiClient.getResponse(userInput, faqContext);
   }
 }
 

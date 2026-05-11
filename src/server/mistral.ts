@@ -32,9 +32,14 @@ export class MistralProxy {
 
   private _buildRequestBody(
     history: { role: "user" | "assistant"; content: string }[],
+    options?: { faqContext?: string },
   ): MistralRequestBody {
     const contextSection = this.siteContent
       ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
+      : "";
+
+    const faqSection = options?.faqContext
+      ? `\n\n=== FAQ CONTEXT (meest passend) ===\n${options.faqContext}\n==================================\nGebruik dit als context, maar kopieer het antwoord NIET letterlijk. Formuleer het antwoord zelf, kort en duidelijk.`
       : "";
 
     return {
@@ -48,7 +53,8 @@ Als het antwoord er niet in staat, zeg dan: "Ik weet dat niet zeker. Neem contac
 Verzin NOOIT informatie. Antwoord kort en bondig, maximaal 2-3 zinnen.
 Antwoord altijd in dezelfde taal als de vraag.
 Gebruik markdown, sterretjes, opsommingstekens.
-Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.${contextSection}`,
+als iemand vraagt op persoonlijke informatie, zeg dan dat wij die niet kunnen geven, verwijs door naar de contactpagina.
+Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankelijke toon als de website.${contextSection}${faqSection}`,
         },
         ...history,
       ],
@@ -65,6 +71,7 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
 
   async forwardMessage(
     history: { role: "user" | "assistant"; content: string }[],
+    options?: { faqContext?: string },
   ): Promise<{ reply: string; totalTokens: number }> {
     if (!this.apiKey) throw new Error("Serverconfiguratie mist API key.");
     if (!this.model) throw new Error("Serverconfiguratie mist model.");
@@ -75,7 +82,7 @@ Spreek de gebruiker aan met "u" en gebruik dezelfde professionele maar toegankel
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(this._buildRequestBody(history)),
+      body: JSON.stringify(this._buildRequestBody(history, options)),
     });
 
     if (!response.ok) {
