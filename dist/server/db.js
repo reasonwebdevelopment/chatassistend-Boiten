@@ -2,12 +2,16 @@ import mysql from "mysql2/promise";
 export class Database {
     pool;
     dbName;
+    dbHost;
+    dbUser;
     constructor() {
         this.dbName = process.env.DB_NAME ?? "chatbot";
+        this.dbHost = process.env.DB_HOST ?? "localhost";
+        this.dbUser = process.env.DB_USER ?? "root";
         // Pool ZONDER database naam, zodat we eerst de database kunnen creëren
         this.pool = mysql.createPool({
-            host: process.env.DB_HOST ?? "localhost",
-            user: process.env.DB_USER ?? "root",
+            host: this.dbHost,
+            user: this.dbUser,
             password: process.env.DB_PASS ?? "",
             waitForConnections: true,
         });
@@ -82,6 +86,9 @@ export class Database {
             console.log(`✓ Database pool opnieuw aangemaakt met database '${this.dbName}'`);
         }
         catch (error) {
+            if (!connection) {
+                console.log(`⚠️ Geen DB connectie gemaakt (host: ${this.dbHost}, user: ${this.dbUser}, database: ${this.dbName}).`);
+            }
             console.error("❌ Fout bij aanmaken van database/tabellen:");
             console.error(error);
             throw error;
