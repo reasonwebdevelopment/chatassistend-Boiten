@@ -7,6 +7,11 @@ import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 dotenv.config();
+const CORS_OPTIONS = {
+    origin: ["https://boitenluhrs.nl", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+};
 class Server {
     port;
     app = express();
@@ -15,16 +20,8 @@ class Server {
         this._configure();
     }
     _configure() {
-        this.app.use(cors({
-            origin: ["https://boitenluhrs.nl", "http://localhost:5173"],
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Content-Type"],
-        }));
-        this.app.options("*", cors({
-            origin: ["https://boitenluhrs.nl", "http://localhost:5173"],
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Content-Type"],
-        }));
+        this.app.use(cors(CORS_OPTIONS));
+        this.app.options("*", cors(CORS_OPTIONS));
         this.app.use(express.json());
         this.app.use(express.static("public"));
         this.app.use(express.static("dist/client"));
@@ -56,7 +53,7 @@ class Server {
                     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
                     res.json({ month, total_tokens: totalTokens, cost });
                 }
-                catch (err) {
+                catch {
                     res.status(500).json({ error: "Kon kosten niet berekenen." });
                 }
             });

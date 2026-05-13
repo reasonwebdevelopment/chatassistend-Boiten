@@ -13,14 +13,14 @@ export class WebScraper {
             .trim();
     }
     _extractLinks(html) {
+        const baseNoSlash = this.baseUrl.replace(/\/$/, "");
         const matches = [...html.matchAll(/href="([^"]+)"/g)];
-        return matches
+        const urls = matches
             .map((m) => m[1])
             .filter((href) => href.startsWith("/") && !href.includes("#"))
-            .map((href) => `${this.baseUrl.replace(/\/$/, "")}${href}`)
-            .filter((url, i, arr) => arr.indexOf(url) === i)
-            .filter((url) => url !== this.baseUrl &&
-            url !== this.baseUrl.replace(/\/$/, "") &&
+            .map((href) => `${baseNoSlash}${href}`);
+        return [...new Set(urls)].filter((url) => url !== this.baseUrl &&
+            url !== baseNoSlash &&
             !url.includes("/opdrachtgever"));
     }
     async _fetchPage(url) {

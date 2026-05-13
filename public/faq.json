@@ -279,6 +279,14 @@
     {
       "vraag": "Ik heb al lang betaald.",
       "antwoord": "Als u al betaald heeft, neem dan contact met ons op voor meer informatie. Stuur indien mogelijk een betaalbewijs mee zodat wij dit kunnen verwerken."
+    },
+    {
+      "vraag": "ik wil weten hoe veel schuld er nog open staat",
+      "antwoord": "Helaas kan ik uw persoonlijke dossier niet inzien, daarvoor moet u contact opnemen met uw dossierbehandelaar. Het directe telefoonnummer en emailadres staat op de brief. Als je deze niet bij de hand heeft, kunt u dit formulier invullen of bellen met 088 - 999 36 66"
+    },
+    {
+      
     }
+
   ]
 }

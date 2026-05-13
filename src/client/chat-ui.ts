@@ -1,7 +1,7 @@
-type MessageSender = "bot" | "user";
-
-import { ChatAssistant } from "./chat-assistent.ts";
+import { ChatAssistant } from "./chat-assistent";
 import { marked } from "marked";
+
+type MessageSender = "bot" | "user";
 type ChatAssistantInstance = InstanceType<typeof ChatAssistant>;
 
 class ChatUI {
@@ -111,8 +111,6 @@ class ChatUI {
     if (sender === "user") {
       bubble.textContent = text;
     } else {
-      // Log raw reply zodat we kunnen debuggen waarom markdown niet zichtbaar is
-      console.debug("[ChatUI] raw bot reply:", text);
       bubble.innerHTML = marked.parse(text) as string;
     }
 

@@ -16,6 +16,24 @@ interface AIErrorResponse {
   error?: string;
 }
 
+/** Woorden die we niet meetellen bij FAQ-overlap (module-scope: één allocatie). */
+const FAQ_STOP_WORDS = new Set([
+  "de",
+  "het",
+  "een",
+  "van",
+  "is",
+  "wat",
+  "hoe",
+  "kan",
+  "ik",
+  "en",
+  "op",
+  "in",
+  "te",
+]);
+const FAQ_MIN_SCORE = 0.45;
+
 class FAQLoader {
   private readonly faqUrl: string;
   private faqData: FAQItem[] | null = null;
@@ -24,12 +42,15 @@ class FAQLoader {
     this.faqUrl = faqUrl;
   }
 
-  private _tokenize(text: string): string[] {
-    return text
-      .toLowerCase()
-      .trim()
-      .match(/[\p{L}\p{N}]+/gu)
-      ?.filter(Boolean) ?? [];
+  private _tokenize(text: unknown): string[] {
+    const normalized = typeof text === "string" ? text : "";
+    return (
+      normalized
+        .toLowerCase()
+        .trim()
+        .match(/[\p{L}\p{N}]+/gu)
+        ?.filter(Boolean) ?? []
+    );
   }
 
   async load(): Promise<FAQItem[]> {
@@ -43,7 +64,12 @@ class FAQLoader {
       }
 
       const data: FAQData = await response.json();
-      this.faqData = data.faq ?? [];
+      const rawFaq = data.faq ?? [];
+      // Defensive: tolerate malformed entries in `faq.json`.
+      this.faqData = rawFaq.filter(
+        (item): item is FAQItem =>
+          typeof item?.vraag === "string" && typeof item?.antwoord === "string",
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.warn("FAQ niet geladen, alleen AI wordt gebruikt:", message);
@@ -63,56 +89,39 @@ class FAQLoader {
     // Bij lange (dossier)teksten is FAQ matching vaak een false positive.
     if (inputText.length > 140) return undefined;
 
-    const STOP_WORDS = new Set([
-      "de",
-      "het",
-      "een",
-      "van",
-      "is",
-      "wat",
-      "hoe",
-      "kan",
-      "ik",
-      "en",
-      "op",
-      "in",
-      "te",
-    ]);
-    const MIN_SCORE = 0.45;
-
     let bestMatch: FAQItem | undefined;
     let bestScore = 0;
+    let bestOverlapCount = 0;
 
     for (const item of this.faqData) {
       const words = this._tokenize(item.vraag).filter(
-        (w) => w.length > 2 && !STOP_WORDS.has(w),
+        (w) => w.length > 2 && !FAQ_STOP_WORDS.has(w),
       );
 
       if (words.length === 0) continue;
 
       // Match op token-niveau (niet op substring) om "ben" in "bent" te voorkomen.
-      const matches = words.filter((word) => inputTokenSet.has(word));
-      const score = matches.length / words.length;
+      const overlapCount = words.reduce(
+        (n, word) => n + (inputTokenSet.has(word) ? 1 : 0),
+        0,
+      );
+      const score = overlapCount / words.length;
 
       if (score > bestScore) {
         bestScore = score;
         bestMatch = item;
+        bestOverlapCount = overlapCount;
       }
     }
 
-    // Extra guard: vereis minimaal 2 token matches om one-word false positives te vermijden.
     if (!bestMatch) return undefined;
-    const bestWords = this._tokenize(bestMatch.vraag).filter(
-      (w) => w.length > 2 && !STOP_WORDS.has(w),
-    );
-    const bestMatches = bestWords.filter((w) => inputTokenSet.has(w));
 
-    // Allow strong single-token queries (e.g. "bent") to match relevant FAQs,
-    // while still guarding longer inputs against one-word false positives.
+    // Extra guard: minimaal 2 token-overlap (behalve bij één-token gebruikersinput).
     const isSingleTokenQuery = inputTokens.length === 1;
-    const strongSingleTokenMatch = isSingleTokenQuery && bestMatches.length >= 1;
+    const strongSingleTokenMatch = isSingleTokenQuery && bestOverlapCount >= 1;
 
-    return bestScore >= MIN_SCORE && (bestMatches.length >= 2 || strongSingleTokenMatch)
+    return bestScore >= FAQ_MIN_SCORE &&
+      (bestOverlapCount >= 2 || strongSingleTokenMatch)
       ? bestMatch
       : undefined;
   }
@@ -122,7 +131,7 @@ class AIClient {
   private readonly proxyUrl: string;
   private conversationId: number | null = null; // Onthoudt het gesprek
   private readonly fallbackMessage =
-    "Er ging iets mis gegaan. Probeer het later opnieuw.";
+    "Er is iets mis gegaan. Probeer het later opnieuw.";
 
   constructor(proxyUrl: string) {
     this.proxyUrl = proxyUrl;

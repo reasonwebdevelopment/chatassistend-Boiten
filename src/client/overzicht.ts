@@ -15,11 +15,7 @@ const moonIcon = "🌙";
 interface Conversation {
   id: number;
   created_at: string;
-}
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
+  message_count: number;
 }
 
 type Theme = "dark" | "light";
@@ -68,17 +64,7 @@ async function loadStats(): Promise<void> {
     const conversations: Conversation[] = await res.json();
     statChats.textContent = conversations.length.toLocaleString("nl-NL");
 
-    const counts = await Promise.all(
-      conversations.map(async (conv) => {
-        try {
-          const r = await fetch(`/api/messages/${conv.id}`);
-          const msgs: Message[] = await r.json();
-          return Array.isArray(msgs) ? msgs.length : 0;
-        } catch {
-          return 0;
-        }
-      }),
-    );
+    const counts = conversations.map((c) => c.message_count ?? 0);
 
     const total = counts.reduce((acc, n) => acc + n, 0);
     statMsgs.textContent = total.toLocaleString("nl-NL");

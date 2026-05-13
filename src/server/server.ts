@@ -1,4 +1,5 @@
 import express from "express";
+import type { Request, Response } from "express";
 import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
@@ -8,6 +9,12 @@ import dotenv from "dotenv";
 import cors from "cors";
 dotenv.config();
 
+const CORS_OPTIONS = {
+  origin: ["https://boitenluhrs.nl", "http://localhost:5173"] as string[],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+};
+
 class Server {
   private app = express();
 
@@ -16,22 +23,8 @@ class Server {
   }
 
   private _configure() {
-    this.app.use(
-      cors({
-        origin: ["https://boitenluhrs.nl", "http://localhost:5173"],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type"],
-      }),
-    );
-
-    this.app.options(
-      "*",
-      cors({
-        origin: ["https://boitenluhrs.nl", "http://localhost:5173"],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type"],
-      }),
-    );
+    this.app.use(cors(CORS_OPTIONS));
+    this.app.options("*", cors(CORS_OPTIONS));
 
     this.app.use(express.json());
     this.app.use(express.static("public"));
@@ -66,18 +59,21 @@ class Server {
       this.app.use("/api", chatRouter.router);
 
       // Endpoint voor huidige maandelijkse kosten-schatting (berekent op verzoek)
-      this.app.get("/api/usage/monthly", async (_req: any, res: any) => {
-        try {
-          const totalTokens = await db.getTotalUsageTokens();
-          const pricePerMillionTokens = 0.0015;
-          const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
-          const now = new Date();
-          const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-          res.json({ month, total_tokens: totalTokens, cost });
-        } catch (err) {
-          res.status(500).json({ error: "Kon kosten niet berekenen." });
-        }
-      });
+      this.app.get(
+        "/api/usage/monthly",
+        async (_req: Request, res: Response) => {
+          try {
+            const totalTokens = await db.getTotalUsageTokens();
+            const pricePerMillionTokens = 0.0015;
+            const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
+            const now = new Date();
+            const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+            res.json({ month, total_tokens: totalTokens, cost });
+          } catch {
+            res.status(500).json({ error: "Kon kosten niet berekenen." });
+          }
+        },
+      );
 
       this.app.listen(this.port, () =>
         console.log(`✓ Server draait op http://localhost:${this.port}`),

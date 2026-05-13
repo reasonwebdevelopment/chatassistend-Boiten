@@ -17,7 +17,8 @@ async function loadFAQ() {
             throw new Error(`FAQ URL gaf status ${response.status}`);
         }
         const data = await response.json();
-        faqCache = data.faq ?? [];
+        const raw = data.faq ?? [];
+        faqCache = raw.filter((item) => typeof item?.vraag === "string" && typeof item?.antwoord === "string");
         return faqCache;
     }
     catch (error) {
@@ -31,17 +32,14 @@ export async function findAnswerInDB(message) {
     if (!messageNorm)
         return null;
     // Bij lange (dossier)teksten is "contains" matching onbetrouwbaar.
-    // Sta alleen exacte/zeer-dichte match toe.
     const isLongMessage = messageNorm.length > 140;
     for (const item of faqItems) {
         const vraagNorm = normalize(item.vraag);
         if (!vraagNorm)
             continue;
-        // Exacte match
         if (vraagNorm === messageNorm) {
             return item.antwoord;
         }
-        // Voor korte vragen: sta substring match toe, maar alleen als de overlap substantieel is.
         if (!isLongMessage) {
             const minLen = Math.min(vraagNorm.length, messageNorm.length);
             const substantial = minLen >= 10;

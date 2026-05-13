@@ -193,8 +193,9 @@ function rerenderChart(): void {
     _allConversations,
     _allCounts,
   );
-  buildLegend(setChartPoints(conversations, counts));
-  drawChart(setChartPoints(conversations, counts), hoverIdx);
+  const points = setChartPoints(conversations, counts);
+  buildLegend(points);
+  drawChart(points, hoverIdx);
 }
 
 function applyFilters(): void {
@@ -600,7 +601,8 @@ if (chartCanvas) {
         _allConversations,
         _allCounts,
       );
-      drawChart(setChartPoints(conversations, counts), hoverIdx);
+      const points = setChartPoints(conversations, counts);
+      drawChart(points, hoverIdx);
     }
   });
 
@@ -610,7 +612,8 @@ if (chartCanvas) {
       _allConversations,
       _allCounts,
     );
-    drawChart(setChartPoints(conversations, counts), hoverIdx);
+    const points = setChartPoints(conversations, counts);
+    drawChart(points, hoverIdx);
     hideTooltip();
     chartCanvas.style.cursor = "default";
   });
@@ -630,7 +633,8 @@ document.addEventListener("chart:resize", () => {
     _allConversations,
     _allCounts,
   );
-  drawChart(setChartPoints(conversations, counts), hoverIdx);
+  const points = setChartPoints(conversations, counts);
+  drawChart(points, hoverIdx);
 });
 
 setActivePreset(activePresetDays);

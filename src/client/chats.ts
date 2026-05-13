@@ -58,7 +58,14 @@ function formatDate(iso: string): string {
 
 async function loadConversations() {
   const res = await fetch("/api/conversations");
+  if (!res.ok) {
+    conversationsDiv.innerHTML =
+      '<div class="empty-state"><p>Gesprekken laden mislukt.</p></div>';
+    return;
+  }
+
   const data: Conversation[] = await res.json();
+  conversationsDiv.innerHTML = "";
 
   data.forEach((conv, i) => {
     const div = document.createElement("div");
@@ -84,6 +91,11 @@ async function loadMessages(convId: number) {
   messagesList.innerHTML = "";
 
   const res = await fetch(`/api/messages/${convId}`);
+  if (!res.ok) {
+    messagesList.innerHTML = `<div class="empty-state"><p>Berichten laden mislukt.</p></div>`;
+    return;
+  }
+
   const data: Message[] = await res.json();
 
   if (data.length === 0) {

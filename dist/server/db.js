@@ -121,7 +121,8 @@ export class Database {
      WHERE conversation_id = ?
      ORDER BY created_at ASC
      LIMIT ?`, [conversationId, limit]);
-        console.log(`Geschiedenis opgehaald, ${rows.length} berichten gevonden.`);
+        const rowCount = Array.isArray(rows) ? rows.length : 0;
+        console.log(`Geschiedenis opgehaald, ${rowCount} berichten gevonden.`);
         return rows;
     }
     async saveUsageLog(conversationId, tokens) {

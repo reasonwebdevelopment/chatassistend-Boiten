@@ -31,7 +31,11 @@ async function loadFAQ(): Promise<FAQItem[]> {
     }
 
     const data: FAQData = await response.json();
-    faqCache = data.faq ?? [];
+    const raw = data.faq ?? [];
+    faqCache = raw.filter(
+      (item): item is FAQItem =>
+        typeof item?.vraag === "string" && typeof item?.antwoord === "string",
+    );
     return faqCache;
   } catch (error) {
     console.error("Fout bij laden van FAQ via URL:", error);
@@ -46,19 +50,16 @@ export async function findAnswerInDB(message: string): Promise<string | null> {
   if (!messageNorm) return null;
 
   // Bij lange (dossier)teksten is "contains" matching onbetrouwbaar.
-  // Sta alleen exacte/zeer-dichte match toe.
   const isLongMessage = messageNorm.length > 140;
 
   for (const item of faqItems) {
     const vraagNorm = normalize(item.vraag);
     if (!vraagNorm) continue;
 
-    // Exacte match
     if (vraagNorm === messageNorm) {
       return item.antwoord;
     }
 
-    // Voor korte vragen: sta substring match toe, maar alleen als de overlap substantieel is.
     if (!isLongMessage) {
       const minLen = Math.min(vraagNorm.length, messageNorm.length);
       const substantial = minLen >= 10;
@@ -67,7 +68,7 @@ export async function findAnswerInDB(message: string): Promise<string | null> {
         substantial &&
         (vraagNorm.includes(messageNorm) || messageNorm.includes(vraagNorm))
       ) {
-      return item.antwoord;
+        return item.antwoord;
       }
     }
   }
