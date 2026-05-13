@@ -45,7 +45,6 @@ const POSITIVE_KEYWORDS = [
     { word: "bijdrage", weight: 2 },
     { word: "inloggegevens", weight: 2 },
 ];
-// Alleen keywords die écht niks met BoitenLuhrs te maken hebben
 const NEGATIVE_KEYWORDS = [
     "supermarkt",
     "restaurant",
@@ -76,22 +75,42 @@ const NEGATIVE_KEYWORDS = [
     "koken",
     "bakken",
 ];
-// Bereken scores los, zodat je ze apart kunt wegen
+function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+/** Precompiled: woordgrenzen voor losse woorden, flexibele spaties voor frases. */
+function compileKeywordMatcher(phrase) {
+    const t = phrase.trim().toLowerCase();
+    if (!t)
+        return () => false;
+    if (/\s/.test(t)) {
+        const parts = t.split(/\s+/).map(escapeRegex);
+        const re = new RegExp(parts.join("\\s+"), "i");
+        return (lower) => re.test(lower);
+    }
+    const re = new RegExp(`\\b${escapeRegex(t)}\\b`, "i");
+    return (lower) => re.test(lower);
+}
+const POSITIVE_TESTS = POSITIVE_KEYWORDS.map(({ word, weight }) => ({
+    weight,
+    test: compileKeywordMatcher(word),
+}));
+const NEGATIVE_TESTS = NEGATIVE_KEYWORDS.map((word) => ({
+    test: compileKeywordMatcher(word),
+}));
 function getScores(message) {
     const lower = message.toLowerCase();
     let positive = 0;
     let negative = 0;
-    for (const keyword of POSITIVE_KEYWORDS) {
-        if (lower.includes(keyword.word)) {
-            positive += keyword.weight;
-        }
+    for (const { weight, test } of POSITIVE_TESTS) {
+        if (test(lower))
+            positive += weight;
     }
-    for (const word of NEGATIVE_KEYWORDS) {
-        if (lower.includes(word)) {
+    for (const { test } of NEGATIVE_TESTS) {
+        if (test(lower))
             negative += 1;
-        }
     }
-    // Combinatie-bonussen
+    // Combinatie-bonussen (substring: ook woorden als "betalingsregeling")
     if (lower.includes("betaling") && lower.includes("regeling"))
         positive += 2;
     if (lower.includes("schuld") && lower.includes("afloss"))
@@ -110,17 +129,12 @@ export function getRelevanceScore(message) {
 }
 export function isRelevant(message) {
     const trimmed = message.trim();
-    // Lege berichten of pure begroetingen altijd doorlaten
-    // (de LLM zelf handelt dit prima af)
     if (trimmed.length < 20)
         return true;
     const { positive, negative } = getScores(trimmed);
-    // Expliciet positief signaal → altijd relevant
     if (positive >= 3)
         return true;
-    // Alleen off-topic als er negatieve signalen zijn ZONDER positieve context
     if (negative > 0 && positive === 0)
         return false;
-    // Twijfelgeval: geef het voordeel van de twijfel
     return true;
 }

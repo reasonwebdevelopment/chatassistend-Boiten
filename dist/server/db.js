@@ -107,8 +107,16 @@ export class Database {
         return insertId;
     }
     async getConversations() {
-        const [rows] = await this.pool.execute("SELECT id, created_at FROM conversations ORDER BY created_at DESC");
-        return rows;
+        const [rows] = await this.pool.execute(`SELECT c.id, c.created_at, COUNT(m.id) AS message_count
+       FROM conversations c
+       LEFT JOIN messages m ON m.conversation_id = c.id
+       GROUP BY c.id, c.created_at
+       ORDER BY c.created_at DESC`);
+        return rows.map((r) => ({
+            id: r.id,
+            created_at: r.created_at,
+            message_count: Number(r.message_count),
+        }));
     }
     async saveMessage(conversationId, role, content) {
         console.log(`Bericht opslaan: [${role}] ${content} (conversation ${conversationId})`);
