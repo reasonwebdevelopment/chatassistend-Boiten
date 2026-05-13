@@ -4,6 +4,7 @@ import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
+import { getFaqAsPromptContext } from "./faqHelper.js";
 import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -54,6 +55,15 @@ class Server {
         process.env.MISTRAL_MODEL ?? "ministral-8b-latest",
       );
       mistral.setSiteContent(scraper.getContent());
+
+      console.log("FAQ-context laden voor AI…");
+      const faqPrompt = await getFaqAsPromptContext();
+      mistral.setFaqContent(faqPrompt);
+      console.log(
+        faqPrompt
+          ? `✓ FAQ-context geladen (${faqPrompt.length} tekens)`
+          : "⚠ Geen FAQ-context (bestand/URL leeg of onbereikbaar)",
+      );
 
       const chatRouter = new ChatRouter(mistral, db);
       this.app.use("/api", chatRouter.router);

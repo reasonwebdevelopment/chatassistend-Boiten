@@ -2,6 +2,7 @@ export class MistralProxy {
     apiKey;
     model;
     siteContent = "";
+    faqContent = "";
     apiUrl = "https://api.mistral.ai/v1/chat/completions";
     constructor(apiKey, model) {
         this.apiKey = apiKey;
@@ -10,9 +11,15 @@ export class MistralProxy {
     setSiteContent(content) {
         this.siteContent = content;
     }
+    setFaqContent(content) {
+        this.faqContent = content;
+    }
     _buildRequestBody(history) {
         const contextSection = this.siteContent
             ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
+            : "";
+        const faqSection = this.faqContent
+            ? `\n\n=== OFFICIËLE FAQ (BOITENLUHRS) ===\nGebruik dit blok als feitelijke bron naast de website; formuleer antwoorden in eigen woorden tenzij een letterlijke zin uit de FAQ het beste past.\n\n${this.faqContent}\n======================`
             : "";
         return {
             model: this.model,
@@ -22,7 +29,7 @@ export class MistralProxy {
                     content: `U bent een vriendelijke, professionele klantenservice-assistent voor boitenluhrs.nl.
 Gedragsregels:
 
-Beantwoord uitsluitend vragen op basis van de meegeleverde website-inhoud.
+Beantwoord uitsluitend vragen op basis van de meegeleverde website-inhoud en de officiële FAQ (indien meegeleverd).
 Verzin nooit informatie. Bij twijfel of ontbrekend antwoord: verwijs door naar de contactpagina op boitenluhrs.nl.
 Vraag nooit naar persoonsgegevens en deel ze nooit — verwijs bij zulke verzoeken altijd door naar de contactpagina.
 Stel bij onduidelijke vragen maximaal één gerichte vervolgvraag.
@@ -47,7 +54,7 @@ zelfstandig ambtelijke of executoriale stappen “bevestigen” als rechtsgeldig
 Antwoordlengte:
 
 Normaal: 4-6 zinnen.
-Bij vervolgvraag of excuses: maximaal 4–6 zinnen.${contextSection}`,
+Bij vervolgvraag of excuses: maximaal 4–6 zinnen.${contextSection}${faqSection}`,
                 },
                 ...history,
             ],

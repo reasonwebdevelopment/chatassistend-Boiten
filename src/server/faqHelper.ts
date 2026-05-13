@@ -1,3 +1,6 @@
+import { readFile } from "fs/promises";
+import path from "path";
+
 interface FAQItem {
   vraag: string;
   antwoord: string;
@@ -7,7 +10,24 @@ interface FAQData {
   faq: FAQItem[];
 }
 
-let faqCache: FAQItem[] | null = null;
+let faqCache: FAQItem[] | undefined;
+
+function filterFaqItems(raw: unknown[]): FAQItem[] {
+  return raw.filter(
+    (item): item is FAQItem =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as FAQItem).vraag === "string" &&
+      typeof (item as FAQItem).antwoord === "string",
+  );
+}
+
+async function loadFAQFromLocalFile(): Promise<FAQItem[]> {
+  const localPath = path.join(process.cwd(), "public", "faq.json");
+  const raw = await readFile(localPath, "utf-8");
+  const data = JSON.parse(raw) as FAQData;
+  return filterFaqItems(data.faq ?? []);
+}
 
 function normalize(text: string): string {
   return text
@@ -18,7 +38,7 @@ function normalize(text: string): string {
 }
 
 async function loadFAQ(): Promise<FAQItem[]> {
-  if (faqCache) return faqCache;
+  if (faqCache !== undefined) return faqCache;
 
   try {
     const faqUrl =
@@ -31,16 +51,34 @@ async function loadFAQ(): Promise<FAQItem[]> {
     }
 
     const data: FAQData = await response.json();
-    const raw = data.faq ?? [];
-    faqCache = raw.filter(
-      (item): item is FAQItem =>
-        typeof item?.vraag === "string" && typeof item?.antwoord === "string",
-    );
+    faqCache = filterFaqItems(data.faq ?? []);
     return faqCache;
   } catch (error) {
     console.error("Fout bij laden van FAQ via URL:", error);
-    return [];
+    try {
+      faqCache = await loadFAQFromLocalFile();
+      if (faqCache.length > 0) {
+        console.log("✓ FAQ geladen uit public/faq.json (fallback)");
+      }
+      return faqCache;
+    } catch {
+      faqCache = [];
+      return faqCache;
+    }
   }
+}
+
+/** Volledige FAQ als één tekstblok voor het AI-systeembericht (RAG-vrije context). */
+export async function getFaqAsPromptContext(): Promise<string> {
+  const items = await loadFAQ();
+  if (items.length === 0) return "";
+
+  return items
+    .map(
+      (item) =>
+        `V: ${item.vraag.replace(/\s+/g, " ").trim()}\nA: ${item.antwoord.replace(/\s+/g, " ").trim()}`,
+    )
+    .join("\n\n");
 }
 
 export async function findAnswerInDB(message: string): Promise<string | null> {

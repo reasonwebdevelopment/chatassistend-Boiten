@@ -1,4 +1,18 @@
-let faqCache = null;
+import { readFile } from "fs/promises";
+import path from "path";
+let faqCache;
+function filterFaqItems(raw) {
+    return raw.filter((item) => typeof item === "object" &&
+        item !== null &&
+        typeof item.vraag === "string" &&
+        typeof item.antwoord === "string");
+}
+async function loadFAQFromLocalFile() {
+    const localPath = path.join(process.cwd(), "public", "faq.json");
+    const raw = await readFile(localPath, "utf-8");
+    const data = JSON.parse(raw);
+    return filterFaqItems(data.faq ?? []);
+}
 function normalize(text) {
     return text
         .toLowerCase()
@@ -7,7 +21,7 @@ function normalize(text) {
         .replace(/\s+/g, " ");
 }
 async function loadFAQ() {
-    if (faqCache)
+    if (faqCache !== undefined)
         return faqCache;
     try {
         const faqUrl = process.env.FAQ_URL ??
@@ -17,14 +31,32 @@ async function loadFAQ() {
             throw new Error(`FAQ URL gaf status ${response.status}`);
         }
         const data = await response.json();
-        const raw = data.faq ?? [];
-        faqCache = raw.filter((item) => typeof item?.vraag === "string" && typeof item?.antwoord === "string");
+        faqCache = filterFaqItems(data.faq ?? []);
         return faqCache;
     }
     catch (error) {
         console.error("Fout bij laden van FAQ via URL:", error);
-        return [];
+        try {
+            faqCache = await loadFAQFromLocalFile();
+            if (faqCache.length > 0) {
+                console.log("✓ FAQ geladen uit public/faq.json (fallback)");
+            }
+            return faqCache;
+        }
+        catch {
+            faqCache = [];
+            return faqCache;
+        }
     }
+}
+/** Volledige FAQ als één tekstblok voor het AI-systeembericht (RAG-vrije context). */
+export async function getFaqAsPromptContext() {
+    const items = await loadFAQ();
+    if (items.length === 0)
+        return "";
+    return items
+        .map((item) => `V: ${item.vraag.replace(/\s+/g, " ").trim()}\nA: ${item.antwoord.replace(/\s+/g, " ").trim()}`)
+        .join("\n\n");
 }
 export async function findAnswerInDB(message) {
     const faqItems = await loadFAQ();
