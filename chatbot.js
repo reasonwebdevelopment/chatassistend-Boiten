@@ -5,13 +5,20 @@
     let e = Array.from(document.querySelectorAll(`script[src]`)).find((e) =>
       e.src.includes(`chatbot.js`),
     );
-    if (!e) return window.location.origin || `http://localhost:3000`;
+    if (!e)
+      return (
+        window.location.origin ||
+        `https://boitenchat-355e0694e40b.herokuapp.com/`
+      );
     let t = e.getAttribute(`data-api-base`)?.trim();
     if (t) return t.replace(/\/$/, ``);
     try {
       return new URL(e.src, document.baseURI).origin;
     } catch {
-      return window.location.origin || `http://localhost:3000`;
+      return (
+        window.location.origin ||
+        `https://boitenchat-355e0694e40b.herokuapp.com/`
+      );
     }
   }
   let t = `${e()}/faq.json`,
