@@ -3,17 +3,38 @@
   window.__boitenluhrsChat = !0;
   const DEFAULT_API_BASE = `https://boitenchat-355e0694e40b.herokuapp.com`;
   function e() {
-    let e = Array.from(document.querySelectorAll(`script[src]`)).find((e) =>
-      e.src.includes(`chatbot.js`),
-    );
-    if (!e) return DEFAULT_API_BASE;
-    let t = e.getAttribute(`data-api-base`)?.trim();
-    if (t) return t.replace(/\/$/, ``);
-    try {
-      return new URL(e.src, document.baseURI).origin || DEFAULT_API_BASE;
-    } catch {
-      return DEFAULT_API_BASE;
+    // Prefer document.currentScript when available
+    let script = document.currentScript;
+    if (!script) {
+      // Fallback: prefer a script tag that explicitly sets data-api-base,
+      // otherwise try to find the script by filename.
+      script =
+        Array.from(document.querySelectorAll("script[src]")).find((s) =>
+          s.getAttribute("data-api-base"),
+        ) ||
+        Array.from(document.querySelectorAll("script[src]")).find(
+          (s) => s.src && s.src.includes("chatbot.js"),
+        );
     }
+    if (!script) return DEFAULT_API_BASE;
+
+    // If the embed provides a data-api-base attribute, use it.
+    let apiBase = script.getAttribute("data-api-base")?.trim();
+    if (apiBase) return apiBase.replace(/\/$/, "");
+
+    // Allow passing the API base via a query param on the script src, e.g.
+    try {
+      let src = script.src || "";
+      if (src) {
+        let url = new URL(src, document.baseURI);
+        let param =
+          url.searchParams.get("api_base") || url.searchParams.get("api-base");
+        if (param) return param.replace(/\/$/, "");
+        return url.origin || DEFAULT_API_BASE;
+      }
+    } catch (err) {}
+
+    return DEFAULT_API_BASE;
   }
   let t = `${e()}/faq.json`,
     n = document.createElement(`style`);
@@ -212,6 +233,36 @@
     .bl-typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .bl-typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
+    /* Quick questions (snelvragen) */
+    .chat-popup__quick-questions {
+      border-top: 1px solid rgba(228,226,218,0.7);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 0.6rem;
+      padding: 0.95rem 1rem 0.85rem;
+      align-items: stretch;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+    .chat-popup__quick-questions.is-hidden { display: none; }
+    .chat-popup__quick-question {
+      appearance: none;
+      border: 1px solid rgba(83,58,146,0.12);
+      background: linear-gradient(transparent, rgba(83,58,146,0.03));
+      border-radius: 999px;
+      height: 40px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.12s, background 0.15s;
+    }
+    .chat-popup__quick-question:active { transform: translateY(1px); }
+    .is-hidden { display: none !important; }
+
     /* Footer */
     #bl-chat-popup .bl-footer {
       display: flex;
@@ -309,6 +360,13 @@
         </div>
       </div>
 
+        <div class="chat-popup__quick-questions" aria-label="Veel gestelde vragen">
+          <button type="button" class="chat-popup__quick-question" data-question="Hoe kan ik contact opnemen met BoitenLuhrs?">contact opnemen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Ik wil graag uitstel aanvragen?">uitstel aanvragen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Wat gebeurt er als ik niet betaal?">niet betalen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Hoe vraag ik een betalingsregeling aan?">regeling?</button>
+        </div>
+
       <div class="bl-footer">
         <input id="bl-chat-input" type="text" placeholder="Stel een vraag..." autocomplete="off" />
         <button id="bl-chat-send" aria-label="Verstuur">
@@ -342,32 +400,84 @@
       `in`,
       `te`,
     ]);
+    // Tokenize using Unicode-aware word characters (letters/numbers)
+    _tokenize(text) {
+      if (typeof text !== "string") return [];
+      try {
+        return (
+          text
+            .toLowerCase()
+            .trim()
+            .match(/[\p{L}\p{N}]+/gu) || []
+        );
+      } catch (err) {
+        // Fallback for environments without unicode regex support
+        return text
+          .toLowerCase()
+          .trim()
+          .split(/[^a-z0-9]+/i)
+          .filter(Boolean);
+      }
+    }
     async load() {
       if (this.data) return this.data;
       try {
-        let e = await fetch(t);
-        if (!e.ok) throw Error(`${e.status}`);
-        this.data = (await e.json()).faq ?? [];
-      } catch {
+        let res = await fetch(t);
+        if (!res.ok) throw Error(`${res.status}`);
+        const json = await res.json();
+        this.data = (json.faq || []).filter(
+          (it) =>
+            it &&
+            typeof it.vraag === "string" &&
+            typeof it.antwoord === "string",
+        );
+      } catch (err) {
         this.data = [];
       }
       return this.data;
     }
-    findAnswer(e) {
-      if (!this.data?.length) return;
-      let t = e.toLowerCase(),
-        n,
-        r = 0;
-      for (let e of this.data) {
-        let i = e.vraag
-          .toLowerCase()
-          .split(` `)
-          .filter((e) => e.length > 2 && !this.STOP_WORDS.has(e));
-        if (!i.length) continue;
-        let a = i.filter((e) => t.includes(e)).length / i.length;
-        a > r && ((r = a), (n = e));
+    findAnswer(input) {
+      if (!this.data || this.data.length === 0) return;
+      const inputTokens = this._tokenize(input);
+      const inputText = inputTokens.join(" ");
+
+      // Avoid false positives for very long inputs
+      if (inputText.length > 140) return;
+
+      const inputSet = new Set(inputTokens);
+
+      let best = undefined;
+      let bestScore = 0;
+      let bestOverlap = 0;
+
+      for (const item of this.data) {
+        const words = this._tokenize(item.vraag).filter(
+          (w) => w.length > 2 && !this.STOP_WORDS.has(w),
+        );
+        if (words.length === 0) continue;
+
+        const overlapCount = words.reduce(
+          (n, w) => n + (inputSet.has(w) ? 1 : 0),
+          0,
+        );
+        const score = overlapCount / words.length;
+
+        if (score > bestScore) {
+          bestScore = score;
+          best = item;
+          bestOverlap = overlapCount;
+        }
       }
-      return r >= 0.3 ? n : void 0;
+
+      if (!best) return;
+
+      const isSingleToken = inputTokens.length === 1;
+      const strongSingleToken = isSingleToken && bestOverlap >= 1;
+
+      // Slightly stricter threshold than before to reduce false positives
+      return bestScore >= 0.45 && (bestOverlap >= 2 || strongSingleToken)
+        ? best
+        : undefined;
     }
   }
   class a {
@@ -433,7 +543,21 @@
     let n = document.createElement(`div`);
     n.className = `bl-msg bl-msg--${t}`;
     let r = document.createElement(`div`);
-    ((r.className = `bl-msg__bubble`), (r.textContent = e));
+    r.className = `bl-msg__bubble`;
+    if (t === `bot`) {
+      // If marked is available, render markdown; otherwise use textContent
+      try {
+        if (window.marked && typeof window.marked.parse === "function") {
+          r.innerHTML = window.marked.parse(e);
+        } else {
+          r.textContent = e;
+        }
+      } catch (err) {
+        r.textContent = e;
+      }
+    } else {
+      r.textContent = e;
+    }
     let i = document.createElement(`div`);
     ((i.className = `bl-msg__time`),
       (i.textContent = m()),
@@ -442,6 +566,50 @@
       l.appendChild(n),
       (l.scrollTop = l.scrollHeight));
   }
+
+  // Add quick-question behavior and load marked for markdown rendering
+  (function setupExtras() {
+    // Load marked from CDN (optional) for markdown rendering in bot replies
+    try {
+      if (!window.marked) {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        s.crossOrigin = "";
+        s.onload = () => {
+          /* marked loaded */
+        };
+        document.head.appendChild(s);
+      }
+    } catch (e) {}
+
+    // Quick question buttons
+    const quickWrap = document.querySelector(".chat-popup__quick-questions");
+    const quickBtns = Array.from(
+      document.querySelectorAll(".chat-popup__quick-question"),
+    );
+    quickBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        // hide quick questions
+        if (quickWrap) {
+          quickWrap.classList.add("is-hidden");
+          quickWrap.setAttribute("aria-hidden", "true");
+        }
+        // send the question
+        const q = btn.getAttribute("data-question") || btn.textContent || "";
+        u.value = q;
+        y();
+      });
+    });
+
+    // Hide quick questions when user types their own question
+    u.addEventListener("input", () => {
+      if (!quickWrap) return;
+      if (u.value.trim().length > 0) {
+        quickWrap.classList.add("is-hidden");
+        quickWrap.setAttribute("aria-hidden", "true");
+      }
+    });
+  })();
   function g() {
     let e = document.createElement(`div`);
     e.className = `bl-msg bl-msg--bot bl-typing`;
