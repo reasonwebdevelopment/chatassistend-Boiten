@@ -1,3 +1,5 @@
+import { marked } from "marked";
+
 const conversationsDiv = document.getElementById("conversations")!;
 const messagesList = document.getElementById("messages-list")!;
 const messagesHeader = document.querySelector("#messages h3")!;
@@ -56,6 +58,19 @@ function formatDate(iso: string): string {
   });
 }
 
+function renderMessageContent(message: Message): string {
+  if (message.role === "assistant") {
+    return marked.parse(message.content) as string;
+  }
+
+  return message.content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function loadConversations() {
   const res = await fetch("/api/conversations");
   if (!res.ok) {
@@ -109,7 +124,7 @@ async function loadMessages(convId: number) {
     div.style.animationDelay = `${i * 30}ms`;
     div.innerHTML = `
       <span class="role-label">${msg.role === "user" ? "Gebruiker" : "Assistent"}</span>
-      <div class="bubble">${msg.content}</div>
+      <div class="bubble">${renderMessageContent(msg)}</div>
     `;
     messagesList.appendChild(div);
   });
