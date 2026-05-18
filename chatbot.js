@@ -1,24 +1,18 @@
 (function () {
   if (window.__boitenluhrsChat) return;
   window.__boitenluhrsChat = !0;
+  const DEFAULT_API_BASE = `https://boitenchat-355e0694e40b.herokuapp.com`;
   function e() {
     let e = Array.from(document.querySelectorAll(`script[src]`)).find((e) =>
       e.src.includes(`chatbot.js`),
     );
-    if (!e)
-      return (
-        window.location.origin ||
-        `https://boitenchat-355e0694e40b.herokuapp.com/`
-      );
+    if (!e) return DEFAULT_API_BASE;
     let t = e.getAttribute(`data-api-base`)?.trim();
     if (t) return t.replace(/\/$/, ``);
     try {
-      return new URL(e.src, document.baseURI).origin;
+      return new URL(e.src, document.baseURI).origin || DEFAULT_API_BASE;
     } catch {
-      return (
-        window.location.origin ||
-        `https://boitenchat-355e0694e40b.herokuapp.com/`
-      );
+      return DEFAULT_API_BASE;
     }
   }
   let t = `${e()}/faq.json`,
