@@ -50,10 +50,10 @@
     /* Chat Bubble */
     #bl-chat-bubble {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      min-width: 58px;
-      height: 58px;
+      bottom: 3rem;
+      right: 3rem;
+      min-width: 65px;
+      height: 65px;
       padding: 0 1rem;
       background: #533a92;
       color: #fff;
@@ -106,7 +106,7 @@
     #bl-chat-popup {
       position: fixed;
       bottom: 5.5rem;
-      right: 2rem;
+      right: 3rem;
       width: 440px;
       max-height: 700px;
       background: #ffffff;
@@ -147,6 +147,7 @@
       background: rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
+      padding-top: 3px;
       justify-content: center;
       font-family: "Biryani", sans-serif;
       font-size: 1.1rem;
@@ -433,6 +434,7 @@
       color: #1a1a18;
       outline: none;
       transition: border-color 0.2s;
+      padding-top: 15px;
     }
 
     #bl-chat-input:focus {
@@ -503,6 +505,7 @@
         font-size: 0.82rem;
         height: 36px;
         padding: 0 0.8rem;
+        padding-top: 12px;
       }
 
       .bl-msg {
@@ -530,8 +533,8 @@
       #bl-chat-bubble {
         bottom: 1rem;
         right: 1rem;
-        width: 50px;
-        height: 50px;
+        width: 75px;
+        height: 75px;
         font-size: 0.75rem;
       }
 
@@ -573,10 +576,10 @@
       </div>
 
         <div class="chat-popup__quick-questions" aria-label="Veel gestelde vragen">
-          <button type="button" class="chat-popup__quick-question" data-question="Hoe kan ik contact opnemen met BoitenLuhrs?">contact opnemen?</button>
-          <button type="button" class="chat-popup__quick-question" data-question="Ik wil graag uitstel aanvragen?">uitstel aanvragen?</button>
-          <button type="button" class="chat-popup__quick-question" data-question="Wat gebeurt er als ik niet betaal?">niet betalen?</button>
-          <button type="button" class="chat-popup__quick-question" data-question="Hoe vraag ik een betalingsregeling aan?">regeling?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Hoe kan ik contact opnemen met BoitenLuhrs?">Contact opnemen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Ik wil graag uitstel aanvragen?">Uitstel aanvragen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Wat gebeurt er als ik niet betaal?">Niet betalen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Hoe vraag ik een betalingsregeling aan?">Regeling?</button>
         </div>
 
       <div class="bl-footer">
