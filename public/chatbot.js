@@ -44,15 +44,17 @@
     #bl-chat-root,
     #bl-chat-root * {
       font-family: "Biryani", sans-serif;
+      box-sizing: border-box;
     }
 
+    /* Chat Bubble */
     #bl-chat-bubble {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
       min-width: 58px;
       height: 58px;
-      padding: 0 1.2rem;
+      padding: 0 1rem;
       background: #533a92;
       color: #fff;
       border-radius: 999px;
@@ -60,26 +62,27 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 2147483646;
+      z-index: 1000;
       box-shadow: 0 4px 20px rgba(83, 58, 146, 0.4);
-      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
       user-select: none;
       border: none;
-      font-family: "Biryani", sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
-      gap: 0.5rem;
-      white-space: nowrap;
     }
+
     #bl-chat-bubble:hover {
-      transform: scale(1.08);
+      transform: scale(1.1);
       box-shadow: 0 8px 30px rgba(83, 58, 146, 0.5);
     }
-    #bl-chat-bubble.is-open {
-      padding: 0;
-      min-width: 58px;
+
+    #bl-chat-bubble .bl-icon-open {
+      position: absolute;
+      transition: opacity 0.2s, transform 0.2s;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
     }
-    #bl-chat-bubble .bl-icon-open  { transition: opacity 0.2s, transform 0.2s; }
+
     #bl-chat-bubble .bl-icon-close {
       position: absolute;
       opacity: 0;
@@ -88,31 +91,39 @@
       font-style: normal;
       font-size: 1.1rem;
     }
-    #bl-chat-bubble.is-open .bl-icon-open  { opacity: 0; transform: rotate(90deg); }
-    #bl-chat-bubble.is-open .bl-icon-close { opacity: 1; transform: rotate(0deg); }
 
+    #bl-chat-bubble.is-open .bl-icon-open {
+      opacity: 0;
+      transform: rotate(90deg);
+    }
+
+    #bl-chat-bubble.is-open .bl-icon-close {
+      opacity: 1;
+      transform: rotate(0deg);
+    }
+
+    /* Chat Popup */
     #bl-chat-popup {
       position: fixed;
       bottom: 5.5rem;
       right: 2rem;
-      width: 360px;
-      max-height: 520px;
+      width: 440px;
+      max-height: 700px;
       background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.14);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.14);
       border: 1px solid #e4e2da;
       display: flex;
       flex-direction: column;
-      z-index: 2147483645;
+      z-index: 999;
       overflow: hidden;
       opacity: 0;
       transform: translateY(20px) scale(0.96);
       transform-origin: bottom right;
       pointer-events: none;
-      transition: opacity 0.3s cubic-bezier(0.34,1.56,0.64,1),
-                  transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-      font-family: "Biryani", sans-serif;
+      transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     #bl-chat-popup.is-open {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -127,13 +138,13 @@
       padding: 1.1rem 1.25rem;
       background: #533a92;
       color: #fff;
-      flex-shrink: 0;
     }
+
     #bl-chat-popup .bl-avatar {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -141,7 +152,12 @@
       font-size: 1.1rem;
       flex-shrink: 0;
     }
-    #bl-chat-popup .bl-name   { font-weight: 500; font-size: 0.9rem; }
+
+    #bl-chat-popup .bl-name {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
     #bl-chat-popup .bl-status {
       font-size: 0.75rem;
       opacity: 0.85;
@@ -149,17 +165,20 @@
       align-items: center;
       gap: 0.35rem;
     }
+
     #bl-chat-popup .bl-dot {
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       background: #4ade80;
       border-radius: 50%;
       display: inline-block;
     }
+
     #bl-chat-popup .bl-close-btn {
       margin-left: auto;
       background: none;
       border: none;
-      color: rgba(255,255,255,0.7);
+      color: rgba(255, 255, 255, 0.7);
       cursor: pointer;
       font-size: 0.85rem;
       padding: 0.25rem;
@@ -167,7 +186,10 @@
       transition: color 0.2s;
       line-height: 1;
     }
-    #bl-chat-popup .bl-close-btn:hover { color: #fff; }
+
+    #bl-chat-popup .bl-close-btn:hover {
+      color: #fff;
+    }
 
     /* Messages */
     #bl-chat-messages {
@@ -178,19 +200,37 @@
       flex-direction: column;
       gap: 1rem;
       scroll-behavior: smooth;
-      background: #f7f5f0;
+      background: #ffffff;
     }
-    #bl-chat-messages::-webkit-scrollbar { width: 4px; }
-    #bl-chat-messages::-webkit-scrollbar-track { background: transparent; }
-    #bl-chat-messages::-webkit-scrollbar-thumb { background: #e4e2da; border-radius: 2px; }
+
+    #bl-chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #bl-chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #bl-chat-messages::-webkit-scrollbar-thumb {
+      background: #e4e2da;
+      border-radius: 2px;
+    }
 
     .bl-msg {
       display: flex;
       flex-direction: column;
-      max-width: 82%;
+      max-width: 80%;
     }
-    .bl-msg--user  { align-self: flex-end;  align-items: flex-end; }
-    .bl-msg--bot   { align-self: flex-start; align-items: flex-start; }
+
+    .bl-msg--user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .bl-msg--bot {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
 
     .bl-msg__bubble {
       padding: 0.7rem 1rem;
@@ -199,17 +239,98 @@
       line-height: 1.55;
       word-break: break-word;
     }
+
+    .bl-msg__bubble strong {
+      font-weight: 600;
+      color: inherit;
+    }
+
+    .bl-msg__bubble em {
+      font-style: italic;
+      color: inherit;
+    }
+
+    .bl-msg__bubble a {
+      color: #00a0d0;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .bl-msg__bubble a:hover {
+      opacity: 0.8;
+    }
+
+    .bl-msg__bubble p {
+      margin: 0.5rem 0;
+    }
+
+    .bl-msg__bubble p:first-child {
+      margin-top: 0;
+    }
+
+    .bl-msg__bubble p:last-child {
+      margin-bottom: 0;
+    }
+
+    .bl-msg__bubble ul,
+    .bl-msg__bubble ol {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .bl-msg__bubble li {
+      margin: 0.25rem 0;
+    }
+
+    .bl-msg__bubble code {
+      background: rgba(0, 0, 0, 0.1);
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+      font-family: "Courier New", monospace;
+      font-size: 0.85em;
+    }
+
+    .bl-msg__bubble pre {
+      background: rgba(0, 0, 0, 0.1);
+      padding: 0.75rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+
+    .bl-msg__bubble pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .bl-msg__bubble blockquote {
+      border-left: 3px solid #00a0d0;
+      padding-left: 0.75rem;
+      margin: 0.5rem 0;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
     .bl-msg--user .bl-msg__bubble {
       background: #533a92;
       color: #fff;
       border-bottom-right-radius: 4px;
     }
+
+    .bl-msg--user .bl-msg__bubble a {
+      color: #fff;
+      text-decoration: underline;
+      opacity: 0.9;
+    }
+
     .bl-msg--bot .bl-msg__bubble {
-      background: #ffffff;
+      background: #f7f5f0;
       color: #1a1a18;
       border: 1px solid #e4e2da;
       border-bottom-left-radius: 4px;
     }
+
     .bl-msg__time {
       font-size: 0.7rem;
       color: #6b6b60;
@@ -217,51 +338,80 @@
       padding: 0 0.25rem;
     }
 
-    /* Typing indicator */
+    /* Typing Indicator */
     .bl-typing .bl-msg__bubble {
       display: flex;
       align-items: center;
       gap: 4px;
       padding: 0.75rem 1rem;
     }
+
     .bl-typing-dot {
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       background: #6b6b60;
       border-radius: 50%;
-      animation: bl-bounce 1.2s ease-in-out infinite;
+      animation: typingBounce 1.2s ease-in-out infinite;
     }
-    .bl-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .bl-typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-    /* Quick questions (snelvragen) */
-    .chat-popup__quick-questions {
-      border-top: 1px solid rgba(228,226,218,0.7);
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 0.6rem;
-      padding: 0.95rem 1rem 0.85rem;
-      align-items: stretch;
-      background: #ffffff;
-      flex-shrink: 0;
+    .bl-typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
     }
-    .chat-popup__quick-questions.is-hidden { display: none; }
+
+    .bl-typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    /* Quick Questions */
+    .chat-popup__quick-questions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+      padding: 1rem;
+      border-top: 1px solid rgba(228, 226, 218, 0.7);
+      align-items: stretch;
+    }
+
+    .chat-popup__quick-questions.is-hidden {
+      display: none;
+    }
+
     .chat-popup__quick-question {
       appearance: none;
-      border: 1px solid rgba(83,58,146,0.12);
-      background: linear-gradient(transparent, rgba(83,58,146,0.03));
+      border: 1px solid rgba(26, 26, 24, 0.12);
+      background: linear-gradient(180deg, rgba(83, 58, 146, 0.06), rgba(83, 58, 146, 0.03));
+      color: #1a3fd4;
       border-radius: 999px;
-      height: 40px;
       padding: 0.45rem 0.9rem;
+      font-family: "Biryani", sans-serif;
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
+      transition: transform 0.15s, background 0.2s, border-color 0.2s, opacity 0.2s;
+      width: 100%;
+      text-align: center;
+      height: 40px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.12s, background 0.15s;
+      box-shadow: 0 6px 18px rgba(83, 58, 146, 0.06);
+      border: 1px solid rgba(83, 58, 146, 0.12);
     }
-    .chat-popup__quick-question:active { transform: translateY(1px); }
-    .is-hidden { display: none !important; }
+
+    .chat-popup__quick-question:hover:not(:disabled) {
+      background: linear-gradient(180deg, rgba(83, 58, 146, 0.1), rgba(83, 58, 146, 0.04));
+      border-color: rgba(83, 58, 146, 0.22);
+      transform: translateY(-2px);
+    }
+
+    .chat-popup__quick-question:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
 
     /* Footer */
     #bl-chat-popup .bl-footer {
@@ -270,9 +420,8 @@
       gap: 0.5rem;
       padding: 0.85rem 1rem;
       border-top: 1px solid #e4e2da;
-      background: #ffffff;
-      flex-shrink: 0;
     }
+
     #bl-chat-input {
       flex: 1;
       border: 1px solid #e4e2da;
@@ -285,11 +434,18 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    #bl-chat-input:focus       { border-color: #533a92; }
-    #bl-chat-input::placeholder { color: #6b6b60; }
+
+    #bl-chat-input:focus {
+      border-color: #533a92;
+    }
+
+    #bl-chat-input::placeholder {
+      color: #6b6b60;
+    }
 
     #bl-chat-send {
-      width: 38px; height: 38px;
+      width: 38px;
+      height: 38px;
       background: #533a92;
       color: #fff;
       border: none;
@@ -301,24 +457,84 @@
       flex-shrink: 0;
       transition: background 0.2s, transform 0.15s;
     }
-    #bl-chat-send:hover              { background: #3f2b70; transform: scale(1.05); }
-    #bl-chat-send:disabled           { background: #b5a9d3; cursor: not-allowed; transform: none; }
-    #bl-chat-input:disabled          { opacity: 0.6; }
+
+    #bl-chat-send:hover {
+      background: #3f2b70;
+      transform: scale(1.05);
+    }
+
+    #bl-chat-send:disabled {
+      background: #b5a9d3;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #bl-chat-input:disabled {
+      opacity: 0.6;
+    }
 
     #bl-chat-popup .bl-disclaimer {
       font-size: 0.72rem;
+      line-height: 1.45;
       color: #6b6b60;
       padding: 0 1rem 0.85rem;
-      background: #ffffff;
-      line-height: 1.45;
     }
 
-    @keyframes bl-bounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30%            { transform: translateY(-5px); }
+    /* Animations */
+    @keyframes typingBounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      #bl-chat-popup {
+        width: calc(100vw - 1rem);
+        height: calc(100vh - 6rem);
+        max-height: none;
+        right: 0.5rem;
+        bottom: 4.5rem;
+      }
+
+      .chat-popup__quick-question {
+        font-size: 0.82rem;
+        height: 36px;
+        padding: 0 0.8rem;
+      }
+
+      .bl-msg {
+        max-width: 90%;
+      }
+
+      .bl-msg__bubble {
+        font-size: 0.85rem;
+        padding: 0.6rem 0.9rem;
+        margin-bottom: 0.25rem;
+      }
+
+      #bl-chat-input {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.9rem;
+      }
+
+      #bl-chat-send {
+        width: 34px;
+        height: 34px;
+      }
     }
 
     @media (max-width: 480px) {
+      #bl-chat-bubble {
+        bottom: 1rem;
+        right: 1rem;
+        width: 50px;
+        height: 50px;
+        font-size: 0.75rem;
+      }
+
       #bl-chat-popup {
         position: fixed;
         width: calc(100vw - 1rem);
@@ -327,10 +543,6 @@
         right: 0.5rem;
         bottom: 4.5rem;
         border-radius: 12px;
-      }
-      #bl-chat-bubble {
-        bottom: 1rem;
-        right: 1rem;
       }
     }
   `),
@@ -355,7 +567,7 @@
 
       <div id="bl-chat-messages">
         <div class="bl-msg bl-msg--bot">
-          <div class="bl-msg__bubble">Hallo! 👋 Hoe kan ik u vandaag helpen?</div>
+          <div class="bl-msg__bubble">Hallo, ik ben de BetaalCoach van BoitenLuhrs. Ik help met algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens.</div>
           <div class="bl-msg__time">Nu</div>
         </div>
       </div>
