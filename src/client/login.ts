@@ -5,10 +5,28 @@ const usernameInput = document.querySelector(
 const passwordInput = document.querySelector(
   "#password",
 ) as HTMLInputElement | null;
+const errorElement = document.querySelector(
+  ".login-error",
+) as HTMLParagraphElement | null;
+
+function showError(message: string) {
+  if (errorElement) {
+    errorElement.textContent = message;
+  } else {
+    alert(message);
+  }
+}
+
+function clearError() {
+  if (errorElement) {
+    errorElement.textContent = "";
+  }
+}
 
 if (form && usernameInput && passwordInput) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    clearError();
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
 
@@ -24,15 +42,15 @@ if (form && usernameInput && passwordInput) {
       });
 
       if (res.ok) {
-        window.location.href = "./overzicht.html";
+        window.location.assign("/overzicht.html");
         return;
       }
 
       const data = await res.json().catch(() => ({ error: "Onbekende fout" }));
       console.error("Login failed", res.status, data);
-      alert(data.error ?? "Inloggen mislukt");
+      showError(data.error ?? "Inloggen mislukt");
     } catch (err) {
-      alert("Kan geen verbinding maken met de server.");
+      showError("Kan geen verbinding maken met de server.");
       console.error(err);
     }
   });
