@@ -8,7 +8,8 @@ import { getFaqAsPromptContext } from "./faqHelper.js";
 import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
-dotenv.config();
+dotenv.config({ override: true });
+console.log(`[ENV] loaded USERNAME='${process.env.USERNAME}' PASS_len=${((process.env.PASSWORD||process.env.WACHTWOORD)||"").length}`);
 
 const CORS_OPTIONS = {
   origin: ["https://boitenluhrs.nl", "http://localhost:5173"] as string[],
@@ -28,6 +29,44 @@ class Server {
     this.app.options("*", cors(CORS_OPTIONS));
 
     this.app.use(express.json());
+    // POST /api/login - controleer credentials uit .env (USERNAME / PASSWORD)
+    this.app.post(
+      "/api/login",
+      (req: express.Request, res: express.Response) => {
+        const { username: usernameRaw, password: passwordRaw } = req.body as {
+          username?: unknown;
+          password?: unknown;
+        };
+
+        if (typeof usernameRaw !== "string" || typeof passwordRaw !== "string") {
+          res.status(400).json({ error: "Ongeldige inloggegevens." });
+          return;
+        }
+
+        const username = usernameRaw.trim();
+        const password = passwordRaw.trim();
+
+        const envUser = (process.env.USERNAME || "").trim();
+        const envPass = (process.env.PASSWORD || process.env.WACHTWOORD || "").trim();
+
+        console.log(`[LOGIN] poging voor user='${username}' envUser='${envUser}' envPass_len=${envPass.length}`);
+
+        if (!envUser || !envPass) {
+          res
+            .status(500)
+            .json({ error: "Serverconfiguratie mist (USERNAME/PASSWORD)." });
+          return;
+        }
+
+        if (username === envUser && password === envPass) {
+          console.log("[LOGIN] succesvol");
+          res.json({ ok: true });
+        } else {
+          console.log("[LOGIN] mislukt: onjuiste gegevens");
+          res.status(401).json({ error: "Ongeldige gebruikersnaam of wachtwoord." });
+        }
+      },
+    );
     this.app.use(express.static("public"));
     this.app.use(express.static("dist/client"));
     this.app.get(
