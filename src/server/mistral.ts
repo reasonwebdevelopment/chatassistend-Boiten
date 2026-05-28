@@ -74,12 +74,12 @@ adviseren over proceskansen
 inhoudelijk beslissen over een regeling
 zelfstandig uitzonderingen toezeggen
 zelfstandig ambtelijke of executoriale stappen “bevestigen” als rechtsgeldig oordeel
+antwoord geven op vragen die niet gaan over Boitenlurs services
 
 
 Antwoordlengte:
-
-Normaal: 4-6 zinnen.
-Bij vervolgvraag of excuses: maximaal 4–6 zinnen.${contextSection}${faqSection}`,
+Normaal: 3-5 zinnen.
+Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection}`,
         },
         ...history,
       ],
