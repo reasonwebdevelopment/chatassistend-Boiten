@@ -9,7 +9,6 @@ import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 dotenv.config({ override: true });
-console.log(`[ENV] loaded USERNAME='${process.env.USERNAME}' PASS_len=${((process.env.PASSWORD||process.env.WACHTWOORD)||"").length}`);
 
 const CORS_OPTIONS = {
   origin: ["https://boitenluhrs.nl", "http://localhost:5173"] as string[],
@@ -38,7 +37,10 @@ class Server {
           password?: unknown;
         };
 
-        if (typeof usernameRaw !== "string" || typeof passwordRaw !== "string") {
+        if (
+          typeof usernameRaw !== "string" ||
+          typeof passwordRaw !== "string"
+        ) {
           res.status(400).json({ error: "Ongeldige inloggegevens." });
           return;
         }
@@ -47,9 +49,15 @@ class Server {
         const password = passwordRaw.trim();
 
         const envUser = (process.env.USERNAME || "").trim();
-        const envPass = (process.env.PASSWORD || process.env.WACHTWOORD || "").trim();
+        const envPass = (
+          process.env.PASSWORD ||
+          process.env.WACHTWOORD ||
+          ""
+        ).trim();
 
-        console.log(`[LOGIN] poging voor user='${username}' envUser='${envUser}' envPass_len=${envPass.length}`);
+        console.log(
+          `[LOGIN] poging voor user='${username}' envUser='${envUser}' envPass_len=${envPass.length}`,
+        );
 
         if (!envUser || !envPass) {
           res
@@ -63,7 +71,9 @@ class Server {
           res.json({ ok: true });
         } else {
           console.log("[LOGIN] mislukt: onjuiste gegevens");
-          res.status(401).json({ error: "Ongeldige gebruikersnaam of wachtwoord." });
+          res
+            .status(401)
+            .json({ error: "Ongeldige gebruikersnaam of wachtwoord." });
         }
       },
     );
