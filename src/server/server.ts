@@ -75,6 +75,9 @@ class Server {
             .status(401)
             .json({ error: "Ongeldige gebruikersnaam of wachtwoord." });
         }
+
+        console.log("[LOGIN] poging verwerkt, response verzonden");
+        console.log("-----------------------------");
       },
     );
     this.app.use(express.static("public"));
