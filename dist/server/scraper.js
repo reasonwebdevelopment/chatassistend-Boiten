@@ -18,6 +18,14 @@ export class WebScraper {
         const urls = matches
             .map((m) => m[1])
             .filter((href) => href.startsWith("/") && !href.includes("#"))
+            .filter((href) => {
+            // Exclude typical static asset extensions (css, js, images, fonts, etc.)
+            return !/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|map|pdf|xls|xlsx)$/i.test(href);
+        })
+            .filter((href) => {
+            // Exclude WordPress content directories like /wp-content
+            return !/\/wp-content(\/|$)/i.test(href);
+        })
             .map((href) => `${baseNoSlash}${href}`);
         return [...new Set(urls)].filter((url) => url !== this.baseUrl &&
             url !== baseNoSlash &&
