@@ -54,7 +54,12 @@ export class WebScraper {
                 throw new Error(`HTTP ${homeResponse.status}`);
             const homeHtml = await homeResponse.text();
             const links = this._extractLinks(homeHtml);
-            const forcedLinks = ["https://boitenluhrs.nl/debiteur/over-boitenluhrs/"];
+            const forcedLinks = [
+                "https://boitenluhrs.nl/debiteur/over-boitenluhrs/",
+                "https://boitenluhrs.nl/debiteur/vonnis-ontvangen/",
+                "https://boitenluhrs.nl/debiteur/beslaglegging/",
+                "https://boitenluhrs.nl/debiteur/hulp-bij-betalen/",
+            ];
             const allLinks = [...new Set([...links, ...forcedLinks])];
             console.log(`Gevonden pagina's: ${allLinks.length}`);
             const pages = await Promise.all([
