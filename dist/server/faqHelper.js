@@ -1,11 +1,14 @@
 import { readFile } from "fs/promises";
 import path from "path";
 let faqCache;
+const LOGIN_RELATED_PATTERN = /\b(inlog(?:gen|gegevens|omgeving|pagina)?|login(?:omgeving|pagina)?|persoonlijke\s+pagina|persoonlijke\s+login|\/?login)\b/i;
 function filterFaqItems(raw) {
     return raw.filter((item) => typeof item === "object" &&
         item !== null &&
         typeof item.vraag === "string" &&
-        typeof item.antwoord === "string");
+        typeof item.antwoord === "string" &&
+        !LOGIN_RELATED_PATTERN.test(item.vraag) &&
+        !LOGIN_RELATED_PATTERN.test(item.antwoord));
 }
 async function loadFAQFromLocalFile() {
     const localPath = path.join(process.cwd(), "public", "faq.json");

@@ -12,13 +12,18 @@ interface FAQData {
 
 let faqCache: FAQItem[] | undefined;
 
+const LOGIN_RELATED_PATTERN =
+  /\b(inlog(?:gen|gegevens|omgeving|pagina)?|login(?:omgeving|pagina)?|persoonlijke\s+pagina|persoonlijke\s+login|\/?login)\b/i;
+
 function filterFaqItems(raw: unknown[]): FAQItem[] {
   return raw.filter(
     (item): item is FAQItem =>
       typeof item === "object" &&
       item !== null &&
       typeof (item as FAQItem).vraag === "string" &&
-      typeof (item as FAQItem).antwoord === "string",
+      typeof (item as FAQItem).antwoord === "string" &&
+      !LOGIN_RELATED_PATTERN.test((item as FAQItem).vraag) &&
+      !LOGIN_RELATED_PATTERN.test((item as FAQItem).antwoord),
   );
 }
 

@@ -53,6 +53,7 @@ export class WebScraper {
             if (!homeResponse.ok)
                 throw new Error(`HTTP ${homeResponse.status}`);
             const homeHtml = await homeResponse.text();
+            //* Voeg handmatig belangrijke pagina's toe die mogelijk niet via links worden gevonden
             const links = this._extractLinks(homeHtml);
             const forcedLinks = [
                 "https://boitenluhrs.nl/debiteur/over-boitenluhrs/",
