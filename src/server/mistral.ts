@@ -116,24 +116,36 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
   }
 
   // Detect whether recent user messages ask about contact
-  private _isContactRequestFromHistory(history: { role: "user" | "assistant"; content: string }[]): boolean {
+  private _isContactRequestFromHistory(
+    history: { role: "user" | "assistant"; content: string }[],
+  ): boolean {
     for (let i = history.length - 1; i >= 0; i--) {
       const h = history[i];
       if (h.role !== "user") continue;
       const s = (h.content || "").toLowerCase();
-      if (/contact opnemen|contactgegevens|hoe kan ik contact|contact|telefoon|e-?mail|email|postadres|adres/.test(s)) return true;
+      if (
+        /contact opnemen|contactgegevens|hoe kan ik contact|contact|telefoon|e-?mail|email|postadres|adres/.test(
+          s,
+        )
+      )
+        return true;
     }
     return false;
   }
 
-  private _lastUserContent(history: { role: "user" | "assistant"; content: string }[]): string {
+  private _lastUserContent(
+    history: { role: "user" | "assistant"; content: string }[],
+  ): string {
     for (let i = history.length - 1; i >= 0; i--) {
       if (history[i].role === "user") return history[i].content || "";
     }
     return "";
   }
 
-  private _ensureContactInfo(reply: string, history: { role: "user" | "assistant"; content: string }[]): string {
+  private _ensureContactInfo(
+    reply: string,
+    history: { role: "user" | "assistant"; content: string }[],
+  ): string {
     const PHONE = "088-999 36 66";
     const EMAIL = "info@boitenluhrs.nl";
     const CONTACT_PAGE = "https://boitenluhrs.nl/contact";
@@ -142,23 +154,33 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
     const lower = out.toLowerCase();
 
     const parts: string[] = [];
-    if (!/088[-\s]*999[-\s]*36[-\s]*66/.test(out)) parts.push(`Telefoon: ${PHONE}`);
+    if (!/088[-\s]*999[-\s]*36[-\s]*66/.test(out))
+      parts.push(`Telefoon: ${PHONE}`);
     if (!/info@boitenluhrs\.nl/i.test(out)) parts.push(`E-mail: ${EMAIL}`);
-    if (!/boitenluhrs\.nl\/(contact|contactpagina)|contactpagina/i.test(lower)) parts.push(`Contactpagina: ${CONTACT_PAGE}`);
+    if (!/boitenluhrs\.nl\/(contact|contactpagina)|contactpagina/i.test(lower))
+      parts.push(`Contactpagina: ${CONTACT_PAGE}`);
 
     if (parts.length > 0) out += `\n\n- ${parts.join("\n- ")}`;
 
     const lastUser = this._lastUserContent(history).toLowerCase();
-    const lastAssistant = [...history].reverse().find((h) => h.role === "assistant")?.content || "";
+    const lastAssistant =
+      [...history].reverse().find((h) => h.role === "assistant")?.content || "";
 
-    const userAskedAddressDirect = /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
-    const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(lastAssistant);
-    const userAffirmative = /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(lastUser);
+    const userAskedAddressDirect =
+      /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
+    const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(
+      lastAssistant,
+    );
+    const userAffirmative =
+      /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(
+        lastUser,
+      );
 
     if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
       out += `\n\nPostadres:\nPostbus 45608\n2504 BA 's-Gravenhage\n\nWe hebben meerdere vestigingen door het land. Voor het dichtstbijzijnde kantoor, geef uw postcode of plaats, of bel ${PHONE} of mail ${EMAIL}. Als u wilt, kan ik de adressen van al onze vestigingen naar uw e-mail sturen of hier in de chat plakken.`;
     } else {
-      if (!/postadres|post adres|post-adres|postbus|adres/i.test(lower)) out += `\n\nWilt u ook het postadres ontvangen?`;
+      if (!/postadres|post adres|post-adres|postbus|adres/i.test(lower))
+        out += `\n\nWilt u ook het postadres ontvangen?`;
     }
 
     return out;
@@ -233,25 +255,25 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
     const reply = this._extractReply(data);
     if (!reply) throw new Error("Geen antwoord ontvangen van Mistral.");
 
-      // Preserve the original reply. Only condense if there are multiple numbered steps.
-      let replyToUse = reply;
-      const stepMatches = reply.match(/\d+[\.)]\s+/g);
-      if (stepMatches && stepMatches.length > 1) {
-        replyToUse = this._condenseToSingleStep(reply);
-      }
+    // Preserve the original reply. Only condense if there are multiple numbered steps.
+    let replyToUse = reply;
+    const stepMatches = reply.match(/\d+[\.)]\s+/g);
+    if (stepMatches && stepMatches.length > 1) {
+      replyToUse = this._condenseToSingleStep(reply);
+    }
 
-      // Truncate the (possibly condensed) reply to configured max lines.
-      const truncated = this._truncateByLines(replyToUse);
+    // Truncate the (possibly condensed) reply to configured max lines.
+    const truncated = this._truncateByLines(replyToUse);
 
-      // Append contact info only if the user asked about contact.
-      const finalReply = this._isContactRequestFromHistory(history)
-        ? this._ensureContactInfo(truncated, history as any)
-        : truncated;
+    // Append contact info only if the user asked about contact.
+    const finalReply = this._isContactRequestFromHistory(history)
+      ? this._ensureContactInfo(truncated, history as any)
+      : truncated;
 
-      return {
-        reply: finalReply,
-        totalTokens: this._extractTotalTokens(data),
-      };
+    return {
+      reply: finalReply,
+      totalTokens: this._extractTotalTokens(data),
+    };
 
     return {
       reply: truncated,
