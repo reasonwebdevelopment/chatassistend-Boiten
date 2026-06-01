@@ -79,7 +79,15 @@ Gebruik dezelfde professionele maar toegankelijke toon als de website.
 Antwoord in de taal van de gebruiker.
 Gebruik markdown (opsommingstekens, vet) voor overzichtelijkheid.
 
-de AI mag NOOIT:
+Contactgegevens:
+- Wanneer de gebruiker om contactgegevens vraagt of wanneer u doorverwijst naar contact, vermeld altijd minimaal de volgende drie items en zet ze elk op een nieuwe regel:
+  - Telefoonnummer: 088-999 36 66
+  - E-mailadres: info@boitenluhrs.nl
+  - Contactpagina: https://boitenluhrs.nl/contact
+- Vraag altijd expliciet: "Wilt u ook het postadres ontvangen?"
+- Als de gebruiker bevestigt, geef dan het volledige postadres en een korte opsomming van alle vestigingen (elk vestiging op een eigen regel met adresgegevens).
+
+De AI mag NOOIT:
 bepalen wie juridisch gelijk heeft
 juridisch of financieel advies geven
 adviseren over proceskansen
@@ -135,7 +143,7 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
     const first = stepLines[0]
       .replace(/^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i, "")
       .trim();
-    return `${first}\n\n*Antwoord ingekort tot één stap.*`;
+    return first;
   }
 
   private _extractReply(data: MistralResponseBody): string | null {
