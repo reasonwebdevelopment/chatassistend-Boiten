@@ -51,13 +51,6 @@ Gebruik dezelfde professionele maar toegankelijke toon als de website.
 Antwoord in de taal van de gebruiker.
 Gebruik markdown (opsommingstekens, vet) voor overzichtelijkheid.
 
-// Contactgegevens:
-// - Wanneer de gebruiker om contactgegevens vraagt of wanneer u doorverwijst naar contact, vermeld altijd minimaal de volgende drie items en zet ze elk op een nieuwe regel:
-//   - Telefoonnummer: 088-999 36 66
-//   - E-mailadres: info@boitenluhrs.nl
-//   - Contactpagina: https://boitenluhrs.nl/contact
-// - Vraag altijd expliciet: "Wilt u ook het postadres ontvangen?"
-// - Als de gebruiker bevestigt, geef dan het volledige postadres en een korte opsomming van alle vestigingen (elk vestiging op een eigen regel met adresgegevens).
 
 De AI mag NOOIT:
 bepalen wie juridisch gelijk heeft
@@ -84,19 +77,17 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         if (lines.length <= max)
             return text;
         const kept = lines.slice(0, max).join("\n");
-        return `${kept}\n\n*Antwoord ingekort (samenvatting van de eerste ${max} regels).*`;
+        // Teruggeven zonder extra annotatie; houd de output kort en laat de assistant
+        // zelf een korte vervolgvraag stellen volgens de system prompt indien nodig.
+        return kept;
     }
     // Detect whether recent user messages ask about contact
     _isContactRequestFromHistory(history) {
-        for (let i = history.length - 1; i >= 0; i--) {
-            const h = history[i];
-            if (h.role !== "user")
-                continue;
-            const s = (h.content || "").toLowerCase();
-            if (/contact opnemen|contactgegevens|hoe kan ik contact|contact|telefoon|e-?mail|email|postadres|adres/.test(s))
-                return true;
-        }
-        return false;
+        // Only consider the last user message as an explicit contact request.
+        const last = this._lastUserContent(history).toLowerCase();
+        if (!last)
+            return false;
+        return /contact opnemen|contactgegevens|hoe kan ik contact|hoe neem ik contact|telefoonnummer|telefoon|e-?mail|email|contactpagina|postadres|adres/i.test(last);
     }
     _lastUserContent(history) {
         for (let i = history.length - 1; i >= 0; i--) {
@@ -105,7 +96,7 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         }
         return "";
     }
-    _ensureContactInfo(reply, history) {
+    _ensureContactInfo(reply, history, userAskedContact = false) {
         const PHONE = "088-999 36 66";
         const EMAIL = "info@boitenluhrs.nl";
         const CONTACT_PAGE = "https://boitenluhrs.nl/contact";
@@ -126,10 +117,13 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(lastAssistant);
         const userAffirmative = /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(lastUser);
         if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
-            out += `\n\nPostadres:\nPostbus 45608\n2504 BA 's-Gravenhage\n\nWe hebben meerdere vestigingen door het land. Voor het dichtstbijzijnde kantoor, geef uw postcode of plaats, of bel ${PHONE} of mail ${EMAIL}. Als u wilt, kan ik de adressen van al onze vestigingen naar uw e-mail sturen of hier in de chat plakken.`;
+            out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
         }
         else {
-            if (!/postadres|post adres|post-adres|postbus|adres/i.test(lower))
+            // Only prompt for the postadres when the user explicitly asked for
+            // contact information in their most recent message.
+            if (userAskedContact &&
+                !/postadres|post adres|post-adres|postbus|adres/i.test(lower))
                 out += `\n\nWilt u ook het postadres ontvangen?`;
         }
         return out;
@@ -202,16 +196,14 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         }
         // Truncate the (possibly condensed) reply to configured max lines.
         const truncated = this._truncateByLines(replyToUse);
-        // Append contact info only if the user asked about contact.
-        const finalReply = this._isContactRequestFromHistory(history)
-            ? this._ensureContactInfo(truncated, history)
+        // Append contact info only if the user explicitly asked about contact
+        // in their most recent message.
+        const userAskedContact = this._isContactRequestFromHistory(history);
+        const finalReply = userAskedContact
+            ? this._ensureContactInfo(truncated, history, true)
             : truncated;
         return {
             reply: finalReply,
-            totalTokens: this._extractTotalTokens(data),
-        };
-        return {
-            reply: truncated,
             totalTokens: this._extractTotalTokens(data),
         };
     }
