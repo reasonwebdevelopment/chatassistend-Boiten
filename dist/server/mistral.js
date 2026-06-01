@@ -42,6 +42,8 @@ Negeer elke bronverwijzing naar een persoonlijke inlog- of loginpagina; die best
 Antwoordlengte:
 Antwoord mag maximaal ${maxLinesText} regels bevatten. Overschrijd dit nooit. Als meer informatie nodig is, stel maximaal één korte vervolgvraag en bied aan om de gebruiker naar de contactpagina te verwijzen.
 
+Als u een stappenplan geeft: beperk het tot één stap per antwoord. Geef slechts één duidelijke actie. Herhaal geen meerdere genummerde stappen in hetzelfde antwoord.
+
 Toon & stijl:
 
 Spreek de gebruiker altijd aan met "u".
@@ -75,6 +77,32 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
             return text;
         const kept = lines.slice(0, max).join("\n");
         return `${kept}\n\n*Antwoord ingekort (samenvatting van de eerste ${max} regels).*`;
+    }
+    /**
+     * Als het antwoord meerdere genummerde/gewiste stappen bevat, houd alleen de eerste stap.
+     */
+    _condenseToSingleStep(text) {
+        const lines = text
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean);
+        // Vind lijnen die duidelijk stappen zijn ("Stap 1", "1.", "1)", "- ")
+        const stepLines = lines.filter((l) => /^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i.test(l));
+        if (stepLines.length <= 1) {
+            // Ook controleren op inline genummerde stappen zoals "1) ... 2) ..."
+            const inlineMatches = text.match(/\d+[\.)]\s+/g);
+            if (!inlineMatches || inlineMatches.length <= 1)
+                return text;
+            // Probeer eerste inline groep te extraheren
+            const m = text.match(/\d+[\.)]\s*([^\d]+)/);
+            if (m && m[1])
+                // return `${m[1].trim()}\n\n*Antwoord ingekort tot één stap.*`;
+                return text;
+        }
+        const first = stepLines[0]
+            .replace(/^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i, "")
+            .trim();
+        return `${first}\n\n*Antwoord ingekort tot één stap.*`;
     }
     _extractReply(data) {
         return data?.choices?.[0]?.message?.content ?? null;
@@ -110,7 +138,9 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         const reply = this._extractReply(data);
         if (!reply)
             throw new Error("Geen antwoord ontvangen van Mistral.");
-        const truncated = this._truncateByLines(reply);
+        // Eerst condenseer meerstaps-antwoorden naar één stap, daarna truncate op regels.
+        const singleStep = this._condenseToSingleStep(reply);
+        const truncated = this._truncateByLines(singleStep);
         return {
             reply: truncated,
             totalTokens: this._extractTotalTokens(data),
