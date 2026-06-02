@@ -14,6 +14,31 @@ let faqCache: FAQItem[] | undefined;
 
 const LOGIN_RELATED_PATTERN =
   /\b(inlog(?:gen|gegevens|omgeving|pagina)?|login(?:omgeving|pagina)?|persoonlijke\s+pagina|persoonlijke\s+login|\/?login)\b/i;
+const FAQ_STOP_WORDS = new Set([
+  "de",
+  "het",
+  "een",
+  "van",
+  "is",
+  "wat",
+  "hoe",
+  "kan",
+  "ik",
+  "en",
+  "op",
+  "in",
+  "te",
+  "als",
+  "maar",
+  "niet",
+  "geen",
+  "hoef",
+  "hoeft",
+  "moet",
+  "moeten",
+  "wordt",
+  "worden",
+]);
 
 function filterFaqItems(raw: unknown[]): FAQItem[] {
   return raw.filter(
@@ -40,6 +65,13 @@ function normalize(text: string): string {
     .trim()
     .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .replace(/\s+/g, " ");
+}
+
+function tokenize(text: string): string[] {
+  return normalize(text)
+    .split(" ")
+    .map((word) => word.trim())
+    .filter((word) => word.length > 2 && !FAQ_STOP_WORDS.has(word));
 }
 
 async function loadFAQ(): Promise<FAQItem[]> {
@@ -79,6 +111,51 @@ export async function getFaqAsPromptContext(): Promise<string> {
   if (items.length === 0) return "";
 
   return items
+    .map(
+      (item) =>
+        `V: ${item.vraag.replace(/\s+/g, " ").trim()}\nA: ${item.antwoord.replace(/\s+/g, " ").trim()}`,
+    )
+    .join("\n\n");
+}
+
+export async function getRelevantFaqAsPromptContext(
+  message: string,
+  maxItems: number = 3,
+): Promise<string> {
+  const faqItems = await loadFAQ();
+  const messageTokens = new Set(tokenize(message));
+
+  if (messageTokens.size === 0) return "";
+
+  const rankedItems = faqItems
+    .map((item) => {
+      const questionTokens = tokenize(item.vraag);
+      if (questionTokens.length === 0) {
+        return { item, score: 0, overlapCount: 0 };
+      }
+
+      const overlapCount = questionTokens.reduce(
+        (count, token) => count + (messageTokens.has(token) ? 1 : 0),
+        0,
+      );
+      const score = overlapCount / questionTokens.length;
+
+      return { item, score, overlapCount };
+    })
+    .filter(({ score, overlapCount }) => score >= 0.4 && overlapCount >= 2)
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      if (right.overlapCount !== left.overlapCount) {
+        return right.overlapCount - left.overlapCount;
+      }
+      return left.item.vraag.length - right.item.vraag.length;
+    })
+    .slice(0, maxItems)
+    .map(({ item }) => item);
+
+  if (rankedItems.length === 0) return "";
+
+  return rankedItems
     .map(
       (item) =>
         `V: ${item.vraag.replace(/\s+/g, " ").trim()}\nA: ${item.antwoord.replace(/\s+/g, " ").trim()}`,

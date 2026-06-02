@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { MistralProxy } from "./mistral.js";
 import { Database } from "./db.js";
 import { isRelevant } from "./keywords.js";
+import { getRelevantFaqAsPromptContext } from "./faqHelper.js";
 
 interface ChatRequestBody {
   message?: unknown;
@@ -44,8 +45,9 @@ export class ChatRouter {
         await this.db.saveMessage(convId, "user", userMessage);
 
         const history = await this.db.getHistory(convId);
+        const faqContext = await getRelevantFaqAsPromptContext(userMessage);
         const { reply: aiResponse, totalTokens } =
-          await this.aiProxy.forwardMessage(history);
+          await this.aiProxy.forwardMessage(history, faqContext);
 
         await this.db.saveMessage(convId, "assistant", aiResponse);
         await this.db.saveUsageLog(convId, totalTokens);

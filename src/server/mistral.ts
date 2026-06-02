@@ -19,7 +19,6 @@ interface MistralErrorBody {
 
 export class MistralProxy {
   private siteContent: string = "";
-  private faqContent: string = "";
   private apiUrl = "https://api.mistral.ai/v1/chat/completions";
 
   private maxReplyLines: number;
@@ -35,19 +34,16 @@ export class MistralProxy {
     this.siteContent = content;
   }
 
-  setFaqContent(content: string) {
-    this.faqContent = content;
-  }
-
   private _buildRequestBody(
     history: { role: "user" | "assistant"; content: string }[],
+    faqContent: string = "",
   ): MistralRequestBody {
     const contextSection = this.siteContent
       ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
       : "";
 
-    const faqSection = this.faqContent
-      ? `\n\n=== OFFICIËLE FAQ (BOITENLUHRS) ===\nGebruik dit blok als feitelijke bron naast de website; formuleer antwoorden in eigen woorden tenzij een letterlijke zin uit de FAQ het beste past.\n\n${this.faqContent}\n======================`
+    const faqSection = faqContent
+      ? `\n\n=== OFFICIËLE FAQ (BOITENLUHRS) ===\nGebruik dit blok alleen als de vraag inhoudelijk duidelijk overeenkomt met één FAQ-item. Een paar gedeelde woorden is niet genoeg. Kies bij twijfel liever niet een FAQ-antwoord, maar stel één korte verduidelijkende vraag of verwijs naar de contactpagina. Formuleer antwoorden in eigen woorden tenzij een letterlijke zin uit de FAQ echt het beste past.\n\n${faqContent}\n======================`
       : "";
 
     const maxLinesText = this.maxReplyLines;
@@ -62,6 +58,7 @@ Gedragsregels:
 
 Beantwoord uitsluitend vragen op basis van de meegeleverde website-inhoud en de officiële FAQ (indien meegeleverd).
 Verzin nooit informatie. Bij twijfel of ontbrekend antwoord: verwijs door naar de contactpagina op boitenluhrs.nl.
+Gebruik de FAQ niet op basis van losse trefwoorden of een gedeeltelijke overlap. Een vraag als "ik hoef niet te betalen maar wat als ik niet betaald word" is niet automatisch hetzelfde als "wat gebeurt er als ik niet betaal".
 Vraag nooit naar persoonsgegevens en deel ze nooit — verwijs bij zulke verzoeken altijd door naar de contactpagina.
 Stel bij onduidelijke vragen maximaal één gerichte vervolgvraag.
 Bied excuses aan wanneer u iemand niet verder kunt helpen.
@@ -223,6 +220,7 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
 
   async forwardMessage(
     history: { role: "user" | "assistant"; content: string }[],
+    faqContent: string = "",
   ): Promise<{ reply: string; totalTokens: number }> {
     if (!this.apiKey) throw new Error("Serverconfiguratie mist API key.");
     if (!this.model) throw new Error("Serverconfiguratie mist model.");
@@ -233,7 +231,7 @@ Bij vervolgvraag of excuses: maximaal 3–5 zinnen.${contextSection}${faqSection
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(this._buildRequestBody(history)),
+      body: JSON.stringify(this._buildRequestBody(history, faqContent)),
     });
 
     if (!response.ok) {
