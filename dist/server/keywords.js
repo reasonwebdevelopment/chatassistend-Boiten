@@ -26,6 +26,7 @@ const POSITIVE_KEYWORDS = [
     { word: "email", weight: 1 },
     { word: "e-mail", weight: 1 },
     { word: "mail", weight: 1 },
+    { word: "bereiken", weight: 1 },
     { word: "telefoon", weight: 1 },
     { word: "telefoonnummer", weight: 1 },
     { word: "bellen", weight: 1 },
