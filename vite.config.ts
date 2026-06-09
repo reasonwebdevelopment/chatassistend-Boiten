@@ -18,6 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "src/client/index.html",
+        login: "src/client/login.html",
         dashboard: "src/client/chats.html",
         dashboard_2: "src/client/overzicht.html",
       },
