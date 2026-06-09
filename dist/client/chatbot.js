@@ -570,14 +570,14 @@
 
       <div id="bl-chat-messages">
         <div class="bl-msg bl-msg--bot">
-          <div class="bl-msg__bubble">Hallo, ik ben de BetaalCoach van BoitenLuhrs. Ik help met algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens.</div>
+          <div class="bl-msg__bubble">Hallo, ik ben de Betaal Coach van BoitenLuhrs. Ik help met algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens. Ik ben vooralsnog alleen in het Nederlands te gebruiken.</div>
           <div class="bl-msg__time">Nu</div>
         </div>
       </div>
 
         <div class="chat-popup__quick-questions" aria-label="Veel gestelde vragen">
           <button type="button" class="chat-popup__quick-question" data-question="Hoe kan ik contact opnemen met BoitenLuhrs?">Contact opnemen?</button>
-          <button type="button" class="chat-popup__quick-question" data-question="Ik wil graag uitstel aanvragen?">Uitstel aanvragen?</button>
+          <button type="button" class="chat-popup__quick-question" data-question="Ik wil graag direct betalen?">Direct betalen?</button>
           <button type="button" class="chat-popup__quick-question" data-question="Wat gebeurt er als ik niet betaal?">Niet betalen?</button>
           <button type="button" class="chat-popup__quick-question" data-question="Hoe vraag ik een betalingsregeling aan?">Regeling?</button>
         </div>
