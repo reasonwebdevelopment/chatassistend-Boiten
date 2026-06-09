@@ -17,6 +17,9 @@ interface MistralErrorBody {
   message?: string;
 }
 
+export const NON_RELEVANT_REPLY =
+  "Daar kan ik je helaas niet mee helpen. Ik beantwoord algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Let op: ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens. Heb je een vraag over één van deze onderwerpen? Dan help ik je graag verder!";
+
 export class MistralProxy {
   private siteContent: string = "";
   private apiUrl = "https://api.mistral.ai/v1/chat/completions";
@@ -66,6 +69,8 @@ Voldoet het antwoord aan alle gedragsregels?
 Geef pas antwoord nadat u deze stappen hebt doorlopen.
 Beantwoord uitsluitend vragen op basis van de meegeleverde website-inhoud en de officiële FAQ (indien meegeleverd).
 Verzin nooit informatie. Bij twijfel of ontbrekend antwoord: verwijs door naar de contactpagina op boitenluhrs.nl.
+Behandel boitenluhrs.nl uitsluitend als een incasso- en gerechtsdeurwaarderskantoor. Leid daaruit nooit af dat het bedrijf fietsen, andere producten of consumentengoederen verkoopt.
+Een vraag over iets kopen, zoals een fiets, is niet relevant voor deze assistent, ook niet als de vraag per ongeluk het woord Boiten of een vergelijkbare naam bevat.
 Gebruik de FAQ niet op basis van losse trefwoorden of een gedeeltelijke overlap. Een vraag als "ik hoef niet te betalen maar wat als ik niet betaald word" is niet automatisch hetzelfde als "wat gebeurt er als ik niet betaal".
 Vraag nooit naar persoonsgegevens en deel ze nooit — verwijs bij zulke verzoeken altijd door naar de contactpagina.
 Stel bij onduidelijke vragen maximaal één gerichte vervolgvraag.
@@ -91,12 +96,12 @@ inhoudelijk beslissen over een regeling
 zelfstandig uitzonderingen toezeggen
 vragen naar persoonlijke informatie of deze verwerken
 zelfstandig ambtelijke of executoriale stappen "bevestigen" als rechtsgeldig oordeel
-antwoord geven op vragen die niet gaan over Boitenluhrs services
+antwoord geven op vragen die niet duidelijk gerelateerd zijn aan de inhoud van de website, FAQ, betalen, incasso, betaalregelingen of het voorkomen van schulden.
 verwijzen naar een inlogpagina (die bestaat niet voor klanten)
 vragen naar vonnis- of factuurnummer of andere persoonsgegevens — verwijs bij zulke vragen altijd naar de contactpagina
 
 Normaal: 3–5 zinnen.
-Bij vervolgvraag of excuses: maximaal 3–5 zinnen.contextSection{contextSection}
+Bij vervolgvraag or excuses: maximaal 3–5 zinnen.contextSection{contextSection}
 contextSection{faqSection}`,
         },
         ...history,
@@ -286,7 +291,9 @@ contextSection{faqSection}`,
 Beantwoord alleen met "ja" of "nee".
 
 Is de volgende vraag gerelateerd aan een incassobureau zoals BoitenLuhrs?
-Het gaat om onderwerpen zoals: schulden, betalingen, facturen, incasso, deurwaarders.
+Het gaat alleen om onderwerpen zoals: schulden, betalingen, facturen, incasso, deurwaarders, vorderingen, beslag, betalingsregelingen, contact over een dossier of het voorkomen van schulden.
+Vraag over het kopen van producten of diensten, zoals een fiets, kleding, eten of andere winkels, is niet relevant.
+Als de vraag slechts het woord "Boiten" of een vergelijkbare naam bevat maar verder over iets anders gaat, antwoord dan "nee".
 
 Vraag: "${message}"
 `;

@@ -1,5 +1,5 @@
 import { getRelevanceScore } from "./keywords.js";
-import { askMistralIfRelevant } from "./mistral.js";
+import { NON_RELEVANT_REPLY, askMistralIfRelevant } from "./mistral.js";
 import { findAnswerInDB } from "./faqHelper.js";
 
 export async function handleMessage(message: string): Promise<string> {
@@ -16,7 +16,7 @@ export async function handleMessage(message: string): Promise<string> {
   const aiRelevant = await askMistralIfRelevant(message);
 
   if (!aiRelevant) {
-    return "Deze chatbot is alleen voor vragen over incasso en betalingen.";
+    return NON_RELEVANT_REPLY;
   }
 
   // AI zegt relevant

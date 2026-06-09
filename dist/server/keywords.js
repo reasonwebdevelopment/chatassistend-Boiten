@@ -129,12 +129,8 @@ export function getRelevanceScore(message) {
 }
 export function isRelevant(message) {
     const trimmed = message.trim();
-    if (trimmed.length < 20)
-        return true;
     const { positive, negative } = getScores(trimmed);
-    if (positive >= 3)
-        return true;
     if (negative > 0 && positive === 0)
         return false;
-    return true;
+    return positive > 0;
 }

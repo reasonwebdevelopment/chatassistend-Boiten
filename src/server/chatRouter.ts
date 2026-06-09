@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { MistralProxy } from "./mistral.js";
+import { MistralProxy, NON_RELEVANT_REPLY } from "./mistral.js";
 import { Database } from "./db.js";
 import { isRelevant } from "./keywords.js";
 import { getRelevantFaqAsPromptContext } from "./faqHelper.js";
@@ -31,8 +31,7 @@ export class ChatRouter {
 
       if (!isRelevant(userMessage)) {
         res.json({
-          reply:
-            "Sorry, ik kan daar niet bij helpen. Stel vragen die relevant zijn voor BoitenLuhrs, zoals over incasso, vorderingen of betalingen.",
+          reply: NON_RELEVANT_REPLY,
         });
         return;
       }
