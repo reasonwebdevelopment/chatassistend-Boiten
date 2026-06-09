@@ -60,7 +60,7 @@ class Server {
         this.app.use(express.static("public"));
         this.app.use(express.static("dist/client"));
         this.app.get("/dashboard", (_req, res) => {
-            res.sendFile(path.resolve("dist/client/dashboard.html"));
+            res.sendFile(path.resolve("dist/client/chats.html"));
         });
     }
     async start() {

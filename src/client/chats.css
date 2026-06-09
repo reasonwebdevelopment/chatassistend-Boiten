@@ -105,6 +105,26 @@ header .subtitle {
   font-family: "Biryani", sans-serif;
 }
 
+header .nav-link {
+  margin-left: 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
+}
+
+header .nav-link:hover {
+  background: var(--panel-bg-2);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
 header .back {
   margin-left: 12px;
   display: inline-flex;

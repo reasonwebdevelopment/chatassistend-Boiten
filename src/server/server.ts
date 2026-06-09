@@ -84,7 +84,7 @@ class Server {
     this.app.get(
       "/dashboard",
       (_req: express.Request, res: express.Response) => {
-        res.sendFile(path.resolve("dist/client/dashboard.html"));
+        res.sendFile(path.resolve("dist/client/chats.html"));
       },
     );
   }
