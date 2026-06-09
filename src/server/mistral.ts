@@ -87,6 +87,11 @@ Spreek de gebruiker altijd aan met "u".
 Gebruik dezelfde professionele maar toegankelijke toon als de website.
 Antwoord in de taal van de gebruiker.
 Gebruik markdown (opsommingstekens, vet) voor overzichtelijkheid.
+het telefoonnummer van BoitenLuhrs is 088-999 36 66 en het algemene e-mailadres is info@boitenluhrs.nl. het telefoonnummer voor het kantoor in Amsterdam is  020 - 689 00 00
+als de gebruiker direct wil betalen moet er verwezen worden naar https://boitenluhrs.nl/debiteur/
+wees consistent in je antwoorden.
+Bij het vragen naar een betaalregeling verwijs naar de pagina https://boitenluhrs.nl/debiteur/regeling-treffen/ en gebruik zelf informatie van deze pagina.
+
 
 De AI mag NOOIT:
 bepalen wie juridisch gelijk heeft
@@ -98,7 +103,7 @@ vragen naar persoonlijke informatie of deze verwerken
 zelfstandig ambtelijke of executoriale stappen "bevestigen" als rechtsgeldig oordeel
 antwoord geven op vragen die niet duidelijk gerelateerd zijn aan de inhoud van de website, FAQ, betalen, incasso, betaalregelingen of het voorkomen van schulden.
 verwijzen naar een inlogpagina (die bestaat niet voor klanten)
-vragen naar vonnis- of factuurnummer of andere persoonsgegevens — verwijs bij zulke vragen altijd naar de contactpagina
+vraag NOOIT naar vonnis- of factuurnummer of andere persoonsgegevens.
 
 Normaal: 3–5 zinnen.
 Bij vervolgvraag or excuses: maximaal 3–5 zinnen.contextSection{contextSection}
@@ -165,27 +170,27 @@ contextSection{faqSection}`,
     const lastAssistant =
       [...history].reverse().find((h) => h.role === "assistant")?.content || "";
 
-    const userAskedAddressDirect =
-      /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
-    const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(
-      lastAssistant,
-    );
-    const userAffirmative =
-      /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(
-        lastUser,
-      );
+    // const userAskedAddressDirect =
+    //   /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
+    // const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(
+    //   lastAssistant,
+    // );
+    // const userAffirmative =
+    //   /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(
+    //     lastUser,
+    //   );
 
-    if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
-      out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
-    } else {
-      // Only prompt for the postadres when the user explicitly asked for
-      // contact information in their most recent message.
-      if (
-        userAskedContact &&
-        !/postadres|post adres|post-adres|postbus|adres/i.test(lower)
-      )
-        out += `\n\nWilt u ook het postadres ontvangen?`;
-    }
+    // if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
+    //   out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
+    // } else {
+    //   // Only prompt for the postadres when the user explicitly asked for
+    //   // contact information in their most recent message.
+    //   if (
+    //     userAskedContact &&
+    // !/postadres|post adres|post-adres|postbus|adres/i.test(lower)
+    //   )
+    //     out += `\n\nWilt u ook het postadres ontvangen?`;
+    // }
 
     return out;
   }

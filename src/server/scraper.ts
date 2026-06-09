@@ -65,6 +65,9 @@ export class WebScraper {
         "https://boitenluhrs.nl/debiteur/vonnis-ontvangen/",
         "https://boitenluhrs.nl/debiteur/beslaglegging/",
         "https://boitenluhrs.nl/debiteur/hulp-bij-betalen/",
+        "https://boitenluhrs.nl/debiteur/contact/",
+        "https://boitenluhrs.nl/opdrachtgever/veel-gestelde-vragen/",
+        "https://boitenluhrs.nl/debiteur/regeling-treffen/",
       ];
       const allLinks = [...new Set([...links, ...forcedLinks])];
       console.log(`Gevonden pagina's: ${allLinks.length}`);

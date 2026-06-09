@@ -57,6 +57,7 @@ Spreek de gebruiker altijd aan met "u".
 Gebruik dezelfde professionele maar toegankelijke toon als de website.
 Antwoord in de taal van de gebruiker.
 Gebruik markdown (opsommingstekens, vet) voor overzichtelijkheid.
+het telefoonnummer van BoitenLuhrs is 088-999 36 66 en het algemene e-mailadres is info@boitenluhrs.nl. het telefoonnummer voor het kantoor in Amsterdam is  020 - 689 00 00
 
 De AI mag NOOIT:
 bepalen wie juridisch gelijk heeft
@@ -120,19 +121,26 @@ contextSection{faqSection}`,
             out += `\n\n- ${parts.join("\n- ")}`;
         const lastUser = this._lastUserContent(history).toLowerCase();
         const lastAssistant = [...history].reverse().find((h) => h.role === "assistant")?.content || "";
-        const userAskedAddressDirect = /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
-        const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(lastAssistant);
-        const userAffirmative = /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(lastUser);
-        if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
-            out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
-        }
-        else {
-            // Only prompt for the postadres when the user explicitly asked for
-            // contact information in their most recent message.
-            if (userAskedContact &&
-                !/postadres|post adres|post-adres|postbus|adres/i.test(lower))
-                out += `\n\nWilt u ook het postadres ontvangen?`;
-        }
+        // const userAskedAddressDirect =
+        //   /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
+        // const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(
+        //   lastAssistant,
+        // );
+        // const userAffirmative =
+        //   /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(
+        //     lastUser,
+        //   );
+        // if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
+        //   out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
+        // } else {
+        //   // Only prompt for the postadres when the user explicitly asked for
+        //   // contact information in their most recent message.
+        //   if (
+        //     userAskedContact &&
+        // !/postadres|post adres|post-adres|postbus|adres/i.test(lower)
+        //   )
+        //     out += `\n\nWilt u ook het postadres ontvangen?`;
+        // }
         return out;
     }
     /**
