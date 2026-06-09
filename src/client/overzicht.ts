@@ -5,7 +5,7 @@ const themeToggle = document.getElementById(
 ) as HTMLButtonElement;
 const statChats = document.getElementById("stat-chats")!;
 const statMsgs = document.getElementById("stat-msgs")!;
-const statCost = document.getElementById("stat-cost")!;
+const statCost = document.getElementById("stat-cost");
 const refreshBtn = document.getElementById("refresh-btn") as HTMLButtonElement;
 
 const themeStorageKey = "dashboard-theme";
@@ -45,13 +45,17 @@ function applyTheme(theme: Theme): void {
 function setShimmer(): void {
   statChats.innerHTML = '<span class="shimmer"></span>';
   statMsgs.innerHTML = '<span class="shimmer"></span>';
-  statCost.innerHTML = '<span class="shimmer"></span>';
+  if (statCost) {
+    statCost.innerHTML = '<span class="shimmer"></span>';
+  }
 }
 
 function setError(): void {
   statChats.innerHTML = '<span class="error-msg">—</span>';
   statMsgs.innerHTML = '<span class="error-msg">—</span>';
-  statCost.innerHTML = '<span class="error-msg">—</span>';
+  if (statCost) {
+    statCost.innerHTML = '<span class="error-msg">—</span>';
+  }
 }
 
 async function loadStats(): Promise<void> {
@@ -73,21 +77,23 @@ async function loadStats(): Promise<void> {
     _counts = counts;
     renderChart(conversations, counts);
 
-    try {
-      const usageRes = await fetch("/api/usage");
-      if (!usageRes.ok) throw new Error(`API fout: ${usageRes.status}`);
+    if (statCost) {
+      try {
+        const usageRes = await fetch("/api/usage");
+        if (!usageRes.ok) throw new Error(`API fout: ${usageRes.status}`);
 
-      const usage: { cost?: number } = await usageRes.json();
-      const formattedCost = (usage.cost ?? 0).toLocaleString("nl-NL", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 6,
-      });
-      statCost.textContent = formattedCost;
-    } catch (usageErr) {
-      console.error("Kosten konden niet worden geladen:", usageErr);
-      statCost.innerHTML = '<span class="error-msg">—</span>';
+        const usage: { cost?: number } = await usageRes.json();
+        const formattedCost = (usage.cost ?? 0).toLocaleString("nl-NL", {
+          style: "currency",
+          currency: "EUR",
+          minimumFractionDigits: 4,
+          maximumFractionDigits: 6,
+        });
+        statCost.textContent = formattedCost;
+      } catch (usageErr) {
+        console.error("Kosten konden niet worden geladen:", usageErr);
+        statCost.innerHTML = '<span class="error-msg">—</span>';
+      }
     }
   } catch (err) {
     console.error("Stats konden niet worden geladen:", err);
