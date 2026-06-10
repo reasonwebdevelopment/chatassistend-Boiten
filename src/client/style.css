@@ -743,7 +743,7 @@ body {
   padding: 0.6rem 1rem;
   padding-top: 12px;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 1rem;
   background: var(--bg);
   color: var(--ink);
   outline: none;
@@ -958,7 +958,7 @@ body {
   }
 
   .chat-popup__input {
-    font-size: 0.8rem;
+    font-size: 1rem;
     padding: 0.5rem 0.9rem;
   }
 
