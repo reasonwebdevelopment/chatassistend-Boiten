@@ -24,14 +24,14 @@
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
-    "marked": "^18.0.4",
-    "mysql2": "^3.22.4",
+    "marked": "^18.0.5",
+    "mysql2": "^3.22.5",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.3",
     "concurrently": "^9.2.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.22.4",
