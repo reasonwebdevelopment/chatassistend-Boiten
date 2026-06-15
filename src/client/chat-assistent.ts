@@ -1,3 +1,5 @@
+import { fetchWithAuth } from "./auth-helper";
+
 interface FAQItem {
   vraag: string;
   antwoord: string;
@@ -139,7 +141,7 @@ class AIClient {
 
   async getResponse(message: string): Promise<string> {
     try {
-      const response = await fetch(this.proxyUrl, {
+      const response = await fetchWithAuth(this.proxyUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,5 @@
 import { marked } from "marked";
+import { fetchWithAuth } from "./auth-helper";
 
 const conversationsDiv = document.getElementById("conversations")!;
 const messagesList = document.getElementById("messages-list")!;
@@ -72,7 +73,7 @@ function renderMessageContent(message: Message): string {
 }
 
 async function loadConversations() {
-  const res = await fetch("/api/conversations");
+  const res = await fetchWithAuth("/api/conversations");
   if (!res.ok) {
     conversationsDiv.innerHTML =
       '<div class="empty-state"><p>Gesprekken laden mislukt.</p></div>';
@@ -105,7 +106,7 @@ async function loadMessages(convId: number) {
   messagesHeader.textContent = `Gesprek #${convId}`;
   messagesList.innerHTML = "";
 
-  const res = await fetch(`/api/messages/${convId}`);
+  const res = await fetchWithAuth(`/api/messages/${convId}`);
   if (!res.ok) {
     messagesList.innerHTML = `<div class="empty-state"><p>Berichten laden mislukt.</p></div>`;
     return;

@@ -3,6 +3,7 @@ import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
+import { authenticateToken, signToken } from "./auth.js";
 import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -46,7 +47,8 @@ class Server {
             }
             if (username === envUser && password === envPass) {
                 console.log("[LOGIN] succesvol");
-                res.json({ ok: true });
+                const token = signToken({ username });
+                res.json({ ok: true, token });
             }
             else {
                 console.log("[LOGIN] mislukt: onjuiste gegevens");
@@ -78,7 +80,7 @@ class Server {
             const chatRouter = new ChatRouter(mistral, db);
             this.app.use("/api", chatRouter.router);
             // Endpoint voor huidige maandelijkse kosten-schatting (berekent op verzoek)
-            this.app.get("/api/usage/monthly", async (_req, res) => {
+            this.app.get("/api/usage/monthly", authenticateToken, async (_req, res) => {
                 try {
                     const totalTokens = await db.getTotalUsageTokens();
                     const pricePerMillionTokens = 0.0015;

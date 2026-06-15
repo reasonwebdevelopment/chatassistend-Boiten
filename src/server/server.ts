@@ -4,6 +4,7 @@ import { Database } from "./db.js";
 import { WebScraper } from "./scraper.js";
 import { MistralProxy } from "./mistral.js";
 import { ChatRouter } from "./chatRouter.js";
+import { authenticateToken, signToken } from "./auth.js";
 import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -67,7 +68,8 @@ class Server {
 
         if (username === envUser && password === envPass) {
           console.log("[LOGIN] succesvol");
-          res.json({ ok: true });
+          const token = signToken({ username });
+          res.json({ ok: true, token });
         } else {
           console.log("[LOGIN] mislukt: onjuiste gegevens");
           res
@@ -113,6 +115,7 @@ class Server {
       // Endpoint voor huidige maandelijkse kosten-schatting (berekent op verzoek)
       this.app.get(
         "/api/usage/monthly",
+        authenticateToken,
         async (_req: Request, res: Response) => {
           try {
             const totalTokens = await db.getTotalUsageTokens();

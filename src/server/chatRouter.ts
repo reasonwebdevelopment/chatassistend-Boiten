@@ -3,6 +3,7 @@ import { MistralProxy, NON_RELEVANT_REPLY } from "./mistral.js";
 import { Database } from "./db.js";
 import { isRelevant } from "./keywords.js";
 import { getRelevantFaqAsPromptContext } from "./faqHelper.js";
+import { authenticateToken } from "./auth.js";
 
 interface ChatRequestBody {
   message?: unknown;
@@ -41,6 +42,17 @@ export class ChatRouter {
           typeof conversation_id === "number"
             ? conversation_id
             : await this.db.createConversation();
+
+        const userMessageCount = await this.db.countUserMessages(convId);
+
+        if (userMessageCount >= 10) {
+          res.json({
+            reply: "Je hebt de limiet van 10 vragen bereikt. Voor verdere hulp verzoeken we je vriendelijk om direct contact met ons op te nemen via de contactpagina.",
+            conversation_id: convId,
+          });
+          return;
+        }
+
         await this.db.saveMessage(convId, "user", userMessage);
 
         const history = await this.db.getHistory(convId);
@@ -62,7 +74,7 @@ export class ChatRouter {
       }
     });
 
-    this.router.get("/conversations", async (_req: Request, res: Response) => {
+    this.router.get("/conversations", authenticateToken, async (_req: Request, res: Response) => {
       try {
         const conversations = await this.db.getConversations();
         res.json(conversations);
@@ -74,6 +86,7 @@ export class ChatRouter {
 
     this.router.get(
       "/messages/:convId",
+      authenticateToken,
       async (req: Request, res: Response) => {
         const convIdParam = Array.isArray(req.params.convId)
           ? req.params.convId[0]
@@ -94,7 +107,7 @@ export class ChatRouter {
       },
     );
 
-    this.router.get("/usage", async (_req: Request, res: Response) => {
+    this.router.get("/usage", authenticateToken, async (_req: Request, res: Response) => {
       try {
         const totalTokens = await this.db.getTotalUsageTokens();
         const pricePerMillionTokens = 0.0015;

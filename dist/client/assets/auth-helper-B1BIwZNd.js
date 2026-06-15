@@ -1,0 +1,1 @@
+async function e(e,t={}){let n=localStorage.getItem(`auth_token`),r={...t.headers,Authorization:`Bearer ${n}`},i=await fetch(e,{...t,headers:r});return(i.status===401||i.status===403)&&(localStorage.removeItem(`auth_token`),window.location.assign(`/login.html`)),i}export{e as t};

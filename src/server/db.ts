@@ -113,6 +113,15 @@ export class Database {
     }
   }
 
+  async countUserMessages(conversationId: number): Promise<number> {
+    const [rows] = await this.pool.execute(
+      "SELECT COUNT(*) as count FROM messages WHERE conversation_id = ? AND role = 'user'",
+      [conversationId],
+    );
+    const row = (rows as any[])[0];
+    return row ? Number(row.count) : 0;
+  }
+
   async createConversation(): Promise<number> {
     console.log("Nieuwe conversatie aanmaken...");
     const [result] = await this.pool.execute(

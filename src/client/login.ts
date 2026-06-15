@@ -42,6 +42,10 @@ if (form && usernameInput && passwordInput) {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem("auth_token", data.token);
+        }
         window.location.assign("/overzicht.html");
         return;
       }

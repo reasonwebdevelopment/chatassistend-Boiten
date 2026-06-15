@@ -2,6 +2,7 @@ import { Router } from "express";
 import { NON_RELEVANT_REPLY } from "./mistral.js";
 import { isRelevant } from "./keywords.js";
 import { getRelevantFaqAsPromptContext } from "./faqHelper.js";
+import { authenticateToken } from "./auth.js";
 export class ChatRouter {
     aiProxy;
     db;
@@ -47,7 +48,7 @@ export class ChatRouter {
                 });
             }
         });
-        this.router.get("/conversations", async (_req, res) => {
+        this.router.get("/conversations", authenticateToken, async (_req, res) => {
             try {
                 const conversations = await this.db.getConversations();
                 res.json(conversations);
@@ -57,7 +58,7 @@ export class ChatRouter {
                 res.status(500).json({ error: "Kon gesprekken niet ophalen." });
             }
         });
-        this.router.get("/messages/:convId", async (req, res) => {
+        this.router.get("/messages/:convId", authenticateToken, async (req, res) => {
             const convIdParam = Array.isArray(req.params.convId)
                 ? req.params.convId[0]
                 : req.params.convId;
@@ -74,7 +75,7 @@ export class ChatRouter {
                 res.status(500).json({ error: "Kon berichten niet ophalen." });
             }
         });
-        this.router.get("/usage", async (_req, res) => {
+        this.router.get("/usage", authenticateToken, async (_req, res) => {
             try {
                 const totalTokens = await this.db.getTotalUsageTokens();
                 const pricePerMillionTokens = 0.0015;

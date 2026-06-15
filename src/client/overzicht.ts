@@ -1,4 +1,5 @@
 import { initChartFilters, renderChart, refreshChart } from "./chart";
+import { fetchWithAuth } from "./auth-helper";
 
 const themeToggle = document.getElementById(
   "theme-toggle",
@@ -62,7 +63,7 @@ async function loadStats(): Promise<void> {
   setShimmer();
 
   try {
-    const res = await fetch("/api/conversations");
+    const res = await fetchWithAuth("/api/conversations");
     if (!res.ok) throw new Error(`API fout: ${res.status}`);
 
     const conversations: Conversation[] = await res.json();
@@ -79,7 +80,7 @@ async function loadStats(): Promise<void> {
 
     if (statCost) {
       try {
-        const usageRes = await fetch("/api/usage");
+        const usageRes = await fetchWithAuth("/api/usage");
         if (!usageRes.ok) throw new Error(`API fout: ${usageRes.status}`);
 
         const usage: { cost?: number } = await usageRes.json();
