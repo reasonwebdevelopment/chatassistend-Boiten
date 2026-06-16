@@ -47,7 +47,8 @@ export class ChatRouter {
 
         if (userMessageCount >= 10) {
           res.json({
-            reply: "Je hebt de limiet van 10 vragen bereikt. Voor verdere hulp verzoeken we je vriendelijk om direct contact met ons op te nemen via de contactpagina.",
+            reply:
+              'Je hebt de limiet van 10 vragen bereikt. Voor verdere ondersteuning vragen wij je vriendelijk contact met ons op te nemen via onze <a href="https://boitenluhrs.nl/debiteur/contact/" target="_blank">contactpagina</a>.',
             conversation_id: convId,
           });
           return;
@@ -74,15 +75,19 @@ export class ChatRouter {
       }
     });
 
-    this.router.get("/conversations", authenticateToken, async (_req: Request, res: Response) => {
-      try {
-        const conversations = await this.db.getConversations();
-        res.json(conversations);
-      } catch (error) {
-        console.error("[API] Fout bij /conversations:", error);
-        res.status(500).json({ error: "Kon gesprekken niet ophalen." });
-      }
-    });
+    this.router.get(
+      "/conversations",
+      authenticateToken,
+      async (_req: Request, res: Response) => {
+        try {
+          const conversations = await this.db.getConversations();
+          res.json(conversations);
+        } catch (error) {
+          console.error("[API] Fout bij /conversations:", error);
+          res.status(500).json({ error: "Kon gesprekken niet ophalen." });
+        }
+      },
+    );
 
     this.router.get(
       "/messages/:convId",
@@ -107,20 +112,26 @@ export class ChatRouter {
       },
     );
 
-    this.router.get("/usage", authenticateToken, async (_req: Request, res: Response) => {
-      try {
-        const totalTokens = await this.db.getTotalUsageTokens();
-        const pricePerMillionTokens = 0.0015;
-        const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
+    this.router.get(
+      "/usage",
+      authenticateToken,
+      async (_req: Request, res: Response) => {
+        try {
+          const totalTokens = await this.db.getTotalUsageTokens();
+          const pricePerMillionTokens = 0.0015;
+          const cost = (totalTokens / 1_000_000) * pricePerMillionTokens;
 
-        res.json({
-          total_tokens: totalTokens,
-          cost,
-        });
-      } catch (error) {
-        console.error("[API] Fout bij /usage:", error);
-        res.status(500).json({ error: "Kon usage statistieken niet ophalen." });
-      }
-    });
+          res.json({
+            total_tokens: totalTokens,
+            cost,
+          });
+        } catch (error) {
+          console.error("[API] Fout bij /usage:", error);
+          res
+            .status(500)
+            .json({ error: "Kon usage statistieken niet ophalen." });
+        }
+      },
+    );
   }
 }
