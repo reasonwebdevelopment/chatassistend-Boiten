@@ -43,16 +43,16 @@ export class ChatRouter {
             ? conversation_id
             : await this.db.createConversation();
 
-        const userMessageCount = await this.db.countUserMessages(convId);
+        // const userMessageCount = await this.db.countUserMessages(convId);
 
-        if (userMessageCount >= 10) {
-          res.json({
-            reply:
-              'Je hebt de limiet van 10 vragen bereikt. Voor verdere ondersteuning vragen wij je vriendelijk contact met ons op te nemen via onze <a href="https://boitenluhrs.nl/debiteur/contact/" target="_blank">contactpagina</a>.',
-            conversation_id: convId,
-          });
-          return;
-        }
+        // if (userMessageCount >= 10) {
+        //   res.json({
+        //     reply:
+        //       'Je hebt de limiet van 10 vragen bereikt. Voor verdere ondersteuning vragen wij je vriendelijk contact met ons op te nemen via onze <a href="https://boitenluhrs.nl/debiteur/contact/" target="_blank">contactpagina</a>.',
+        //     conversation_id: convId,
+        //   });
+        //   return;
+        // }
 
         await this.db.saveMessage(convId, "user", userMessage);
 
