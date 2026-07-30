@@ -99,11 +99,6 @@ export class Database {
             }
         }
     }
-    async countUserMessages(conversationId) {
-        const [rows] = await this.pool.execute("SELECT COUNT(*) as count FROM messages WHERE conversation_id = ? AND role = 'user'", [conversationId]);
-        const row = rows[0];
-        return row ? Number(row.count) : 0;
-    }
     async createConversation() {
         console.log("Nieuwe conversatie aanmaken...");
         const [result] = await this.pool.execute("INSERT INTO conversations () VALUES ()");

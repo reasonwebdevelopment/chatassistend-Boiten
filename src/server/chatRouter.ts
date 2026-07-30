@@ -43,7 +43,7 @@ export class ChatRouter {
             ? conversation_id
             : await this.db.createConversation();
 
-        // const userMessageCount = await this.db.countUserMessages(convId);
+        const userMessageCount = await this.db.countUserMessages(convId);
 
         // if (userMessageCount >= 10) {
         //   res.json({

@@ -30,15 +30,6 @@ export class ChatRouter {
                 const convId = typeof conversation_id === "number"
                     ? conversation_id
                     : await this.db.createConversation();
-                // const userMessageCount = await this.db.countUserMessages(convId);
-                // if (userMessageCount >= 10) {
-                //   res.json({
-                //     reply:
-                //       'Je hebt de limiet van 10 vragen bereikt. Voor verdere ondersteuning vragen wij je vriendelijk contact met ons op te nemen via onze <a href="https://boitenluhrs.nl/debiteur/contact/" target="_blank">contactpagina</a>.',
-                //     conversation_id: convId,
-                //   });
-                //   return;
-                // }
                 await this.db.saveMessage(convId, "user", userMessage);
                 const history = await this.db.getHistory(convId);
                 const faqContext = await getRelevantFaqAsPromptContext(userMessage);
@@ -96,9 +87,7 @@ export class ChatRouter {
             }
             catch (error) {
                 console.error("[API] Fout bij /usage:", error);
-                res
-                    .status(500)
-                    .json({ error: "Kon usage statistieken niet ophalen." });
+                res.status(500).json({ error: "Kon usage statistieken niet ophalen." });
             }
         });
     }
