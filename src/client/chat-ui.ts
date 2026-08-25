@@ -112,6 +112,11 @@ class ChatUI {
       bubble.textContent = text;
     } else {
       bubble.innerHTML = marked.parse(text) as string;
+
+      bubble.querySelectorAll("a").forEach((link) => {
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer");
+      });
     }
 
     const time = document.createElement("div");

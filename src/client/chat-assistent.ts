@@ -196,16 +196,19 @@ class ChatAssistant {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  // async getResponse(userInput: string): Promise<string> {
+  //   await this.faqLoader.load();
+
+  //   const faqMatch = this.faqLoader.findAnswer(userInput);
+
+  //   if (faqMatch) {
+  //     await this._fakeDelay();
+  //     return faqMatch.antwoord;
+  //   }
+
+  //   return this.aiClient.getResponse(userInput);
+  // }
   async getResponse(userInput: string): Promise<string> {
-    await this.faqLoader.load();
-
-    const faqMatch = this.faqLoader.findAnswer(userInput);
-
-    if (faqMatch) {
-      await this._fakeDelay();
-      return faqMatch.antwoord;
-    }
-
     return this.aiClient.getResponse(userInput);
   }
 }

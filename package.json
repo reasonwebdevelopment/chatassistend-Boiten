@@ -21,6 +21,7 @@
   "homepage": "https://github.com/boudewijn010/chatassistend-Boiten#readme",
   "description": "",
   "dependencies": {
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.2",

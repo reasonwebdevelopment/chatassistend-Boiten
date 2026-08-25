@@ -99,6 +99,11 @@ export class Database {
             }
         }
     }
+    async countUserMessages(conversationId) {
+        const [rows] = await this.pool.execute("SELECT COUNT(*) as count FROM messages WHERE conversation_id = ? AND role = 'user'", [conversationId]);
+        const row = rows[0];
+        return row ? Number(row.count) : 0;
+    }
     async createConversation() {
         console.log("Nieuwe conversatie aanmaken...");
         const [result] = await this.pool.execute("INSERT INTO conversations () VALUES ()");
@@ -125,10 +130,12 @@ export class Database {
     }
     async getHistory(conversationId, limit = 20) {
         console.log(`Ophalen van geschiedenis voor conversatie ${conversationId}, limit ${limit}`);
-        const [rows] = await this.pool.execute(`SELECT role, content FROM messages
-     WHERE conversation_id = ?
-     ORDER BY created_at ASC
-     LIMIT ?`, [conversationId, limit]);
+        const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 20;
+        const [rows] = await this.pool.execute(`SELECT role, content
+      FROM messages
+      WHERE conversation_id = ?
+      ORDER BY created_at ASC
+      LIMIT ${safeLimit}`, [conversationId]);
         const rowCount = Array.isArray(rows) ? rows.length : 0;
         console.log(`Geschiedenis opgehaald, ${rowCount} berichten gevonden.`);
         return rows;

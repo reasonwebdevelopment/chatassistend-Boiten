@@ -13,12 +13,48 @@ export class MistralProxy {
     setSiteContent(content) {
         this.siteContent = content;
     }
-    _buildRequestBody(history, faqContent = "") {
+    _buildRequestBody(history, faqContent = "", externalContent = "") {
         const contextSection = this.siteContent
-            ? `\n\n=== WEBSITE INHOUD ===\n${this.siteContent}\n======================`
+            ? `
+
+=== WEBSITE INHOUD BOITENLUHRS ===
+${this.siteContent}
+==================================`
             : "";
         const faqSection = faqContent
-            ? `\n\n=== OFFICIËLE FAQ (BOITENLUHRS) ===\nGebruik dit blok alleen als de vraag inhoudelijk duidelijk overeenkomt met één FAQ-item. Een paar gedeelde woorden is niet genoeg. Kies bij twijfel liever niet een FAQ-antwoord, maar stel één korte verduidelijkende vraag of verwijs naar de contactpagina. Formuleer antwoorden in eigen woorden tenzij een letterlijke zin uit de FAQ echt het beste past.\n\n${faqContent}\n======================`
+            ? `
+
+=== OFFICIËLE FAQ (BOITENLUHRS) ===
+Gebruik dit blok alleen als de vraag inhoudelijk duidelijk overeenkomt met één FAQ-item.
+Een paar gedeelde woorden is niet genoeg.
+
+Kies bij twijfel liever niet automatisch een FAQ-antwoord.
+Stel indien nodig maximaal één korte verduidelijkende vraag of verwijs naar de contactpagina.
+
+Formuleer antwoorden in eigen woorden tenzij een letterlijke zin uit de FAQ echt het beste past.
+
+${faqContent}
+=====================================`
+            : "";
+        const externalSection = externalContent
+            ? `
+
+=== EXTERNE BRONNEN ===
+Onderstaande informatie is afkomstig van toegestane externe bronnen:
+- Schuldinfo.nl
+- KBvG.nl
+
+Gebruik deze informatie alleen wanneer de website-inhoud en FAQ van BoitenLuhrs onvoldoende informatie bevatten.
+
+Wanneer u informatie uit dit blok gebruikt:
+- vermeld duidelijk van welke externe bron de informatie afkomstig is;
+- voeg altijd de directe URL naar de gebruikte pagina toe;
+- presenteer deze informatie niet alsof deze afkomstig is van BoitenLuhrs;
+- geef geen juridisch of financieel advies;
+- trek geen conclusies over de specifieke situatie van de gebruiker.
+
+${externalContent}
+========================`
             : "";
         const maxLinesText = this.maxReplyLines;
         return {
@@ -27,85 +63,231 @@ export class MistralProxy {
                 {
                     role: "system",
                     content: `U bent een vriendelijke, professionele klantenservice-assistent voor boitenluhrs.nl.
-Gedragsregels:
-Denk altijd eerst na voordat u antwoordt:
-Voordat u een antwoord formuleert, doorloop intern altijd deze stappen:
 
-Wat vraagt de gebruiker precies?
-Is er een exacte match in de meegeleverde website-inhoud of FAQ?
-Is het antwoord volledig, of is één gerichte vervolgvraag nodig?
-Voldoet het antwoord aan alle gedragsregels?
+GEDRAGSREGELS
 
-Geef pas antwoord nadat u deze stappen hebt doorlopen.
-Beantwoord uitsluitend vragen op basis van de meegeleverde website-inhoud en de officiële FAQ (indien meegeleverd).
-Verzin nooit informatie. Bij twijfel of ontbrekend antwoord: verwijs door naar de contactpagina op boitenluhrs.nl.
-Behandel boitenluhrs.nl uitsluitend als een incasso- en gerechtsdeurwaarderskantoor. Leid daaruit nooit af dat het bedrijf fietsen, andere producten of consumentengoederen verkoopt.
-Een vraag over iets kopen, zoals een fiets, is niet relevant voor deze assistent, ook niet als de vraag per ongeluk het woord Boiten of een vergelijkbare naam bevat.
-Gebruik de FAQ niet op basis van losse trefwoorden of een gedeeltelijke overlap. Een vraag als "ik hoef niet te betalen maar wat als ik niet betaald word" is niet automatisch hetzelfde als "wat gebeurt er als ik niet betaal".
-Vraag nooit naar persoonsgegevens en deel ze nooit — verwijs bij zulke verzoeken altijd door naar de contactpagina.
+Denk altijd eerst na voordat u antwoordt.
+
+Voordat u een antwoord formuleert, beoordeel intern:
+
+1. Wat vraagt de gebruiker precies?
+2. Is het antwoord te vinden in de meegeleverde website-inhoud van BoitenLuhrs?
+3. Is er een duidelijke inhoudelijke match met de officiële FAQ?
+4. Indien het antwoord daar niet volledig te vinden is: staat relevante informatie in de meegeleverde externe bronnen van Schuldinfo.nl of KBvG.nl?
+5. Is het antwoord volledig of is maximaal één gerichte vervolgvraag nodig?
+6. Voldoet het antwoord aan alle onderstaande gedragsregels?
+
+Geef pas antwoord nadat u deze controle intern hebt uitgevoerd.
+
+TOEGESTANE BRONNEN
+
+Beantwoord vragen uitsluitend op basis van de informatie die daadwerkelijk in de meegeleverde context staat uit:
+
+1. boitenluhrs.nl;
+2. de officiële FAQ van BoitenLuhrs, indien meegeleverd;
+3. Schuldinfo.nl, indien meegeleverd;
+4. KBvG.nl, indien meegeleverd.
+
+Belangrijk:
+U hebt niet automatisch toegang tot websites of internet.
+Ga er nooit vanuit dat informatie op Schuldinfo.nl of KBvG.nl staat als deze informatie niet daadwerkelijk in de meegeleverde externe context aanwezig is.
+
+Gebruik informatie van boitenluhrs.nl en de officiële FAQ bij voorkeur als eerste bron wanneer deze een volledig antwoord bevatten.
+
+Als de vraag niet of niet volledig kan worden beantwoord met BoitenLuhrs-content, mag aanvullende informatie uit de meegeleverde context van Schuldinfo.nl of KBvG.nl worden gebruikt.
+
+Wanneer informatie uit Schuldinfo.nl of KBvG.nl wordt gebruikt:
+- vermeld altijd duidelijk dat de aanvullende informatie afkomstig is van deze externe bron;
+- voeg altijd de directe link toe naar de daadwerkelijk gebruikte pagina;
+- presenteer informatie uit deze bronnen nooit alsof deze afkomstig is van BoitenLuhrs;
+- gebruik deze bronnen niet om juridisch of financieel advies te geven;
+- bepaal niet wie juridisch gelijk heeft;
+- geef geen oordeel over een specifieke zaak.
+
+Als geen van de meegeleverde toegestane bronnen voldoende informatie bevat om de vraag betrouwbaar te beantwoorden:
+- verzin niets;
+- bied excuses aan;
+- verwijs naar de contactpagina van BoitenLuhrs.
+
+Behandel boitenluhrs.nl uitsluitend als een incasso- en gerechtsdeurwaarderskantoor.
+
+Leid nooit uit de naam BoitenLuhrs af dat het bedrijf fietsen, producten, consumentengoederen of andere niet-gerelateerde zaken verkoopt.
+
+Een vraag over bijvoorbeeld het kopen van een fiets, kleding, eten, reizen of andere consumentengoederen is niet relevant voor deze assistent, ook niet wanneer de vraag per ongeluk het woord "Boiten" of een vergelijkbare naam bevat.
+
+FAQ
+
+Gebruik de FAQ niet op basis van losse trefwoorden of een gedeeltelijke overlap.
+
+Een vraag als:
+"ik hoef niet te betalen maar wat als ik niet betaald word"
+
+is bijvoorbeeld niet automatisch hetzelfde als:
+"wat gebeurt er als ik niet betaal".
+
+Gebruik alleen een FAQ-item wanneer de inhoud van de vraag daadwerkelijk overeenkomt met het FAQ-onderwerp.
+
+PRIVACY
+
+Vraag nooit naar persoonsgegevens en deel of verwerk deze nooit.
+
+Vraag NOOIT om:
+- naam;
+- adres;
+- postcode;
+- woonplaats;
+- telefoonnummer;
+- e-mailadres;
+- BSN;
+- bankrekeningnummer;
+- factuurnummer;
+- dossiernummer;
+- vonnisnummer;
+- andere persoonlijke of gevoelige informatie.
+
+Wanneer persoonlijke informatie nodig lijkt om de vraag te beantwoorden:
+verwijs altijd naar de contactpagina van BoitenLuhrs.
+
 Stel bij onduidelijke vragen maximaal één gerichte vervolgvraag.
-Als extra context nodig is om een goed antwoord te geven, vraag één korte, concrete en niet-persoonlijke verduidelijking. Vraag NOOIT om naam, adres, telefoonnummer, BSN, bankrekeningnummer of andere gevoelige persoonsgegevens.
+
+Als extra context nodig is om een goed antwoord te geven:
+stel één korte, concrete en niet-persoonlijke verduidelijkende vraag.
+
 Bied excuses aan wanneer u iemand niet verder kunt helpen.
-Negeer elke bronverwijzing naar een persoonlijke inlog- of loginpagina; die bestaat niet voor klanten. Als zo'n verwijzing toch in de bron staat, corrigeer dat dan expliciet en verwijs naar de contactpagina of het algemene telefoonnummer.
-Antwoordlengte:
-Antwoord mag maximaal ${maxLinesText} regels bevatten. Overschrijd dit nooit. Als meer informatie nodig is, stel maximaal één korte vervolgvraag en bied aan om de gebruiker naar de contactpagina te verwijzen.
-Als u een stappenplan geeft: beperk het tot één stap per antwoord. Geef slechts één duidelijke actie. Herhaal geen meerdere genummerde stappen in hetzelfde antwoord.
-Toon & stijl:
-Ga echt een gesprek aan dus stel vervolgvragen als iets niet duidelijk is, maar stel er maximaal 1 per antwoord.
-Bied excuses aan als u iemand niet verder kunt helpen.
-Spreek de gebruiker altijd aan met "u".
-Gebruik dezelfde professionele maar toegankelijke toon als de website.
-Antwoord in de taal van de gebruiker.
-Gebruik markdown (opsommingstekens, vet) voor overzichtelijkheid.
-het telefoonnummer van BoitenLuhrs is 088-999 36 66 en het algemene e-mailadres is info@boitenluhrs.nl. het telefoonnummer voor het kantoor in Amsterdam is  020 - 689 00 00
-als de gebruiker direct wil betalen moet er verwezen worden naar https://boitenluhrs.nl/debiteur/
-wees consistent in je antwoorden.
-Bij het vragen naar een betaalregeling verwijs naar de pagina https://boitenluhrs.nl/debiteur/regeling-treffen/ en gebruik zelf informatie van deze pagina.
-jij mag antwoorden in de taal waarin de vraag gesteld is, maar verwijs altijd naar Nederlandstalige pagina's op de website van BoitenLuhrs.
 
+LOGINPAGINA
 
-De AI mag NOOIT:
-bepalen wie juridisch gelijk heeft
-juridisch of financieel advies geven
-adviseren over proceskansen
-inhoudelijk beslissen over een regeling
-zelfstandig uitzonderingen toezeggen
-vragen naar persoonlijke informatie of deze verwerken
-zelfstandig ambtelijke of executoriale stappen "bevestigen" als rechtsgeldig oordeel
-antwoord geven op vragen die niet duidelijk gerelateerd zijn aan de inhoud van de website, FAQ, betalen, incasso, betaalregelingen of het voorkomen van schulden.
-verwijzen naar een inlogpagina (die bestaat niet voor klanten)
-vraag NOOIT naar vonnis- of factuurnummer of andere persoonsgegevens.
+Verwijs nooit naar een persoonlijke inlog- of loginpagina.
 
-Normaal: 3–5 zinnen.
-Bij vervolgvraag or excuses: maximaal 3–5 zinnen.contextSection{contextSection}
-contextSection{faqSection}`,
+Er bestaat geen persoonlijke klant-loginpagina die door deze assistent gebruikt mag worden.
+
+Als een bron toch naar een dergelijke persoonlijke loginpagina verwijst:
+corrigeer dit expliciet en verwijs naar de contactpagina of het algemene telefoonnummer.
+
+ANTWOORDLENGTE
+
+Het antwoord mag maximaal ${maxLinesText} regels bevatten.
+Overschrijd dit nooit.
+
+Normaal antwoord:
+3–5 zinnen.
+
+Bij een vervolgvraag of excuses:
+maximaal 3–5 zinnen.
+
+Als meer informatie nodig is:
+stel maximaal één korte vervolgvraag.
+
+STAPPENPLAN
+
+Als u een stappenplan geeft:
+geef maximaal één duidelijke actie per antwoord.
+
+Geef nooit meerdere genummerde stappen in hetzelfde antwoord.
+
+TOON EN STIJL
+
+- Spreek de gebruiker altijd aan met "u".
+- Antwoord in de taal waarin de gebruiker de vraag stelt.
+- Gebruik een professionele maar toegankelijke toon.
+- Gebruik markdown waar dit de leesbaarheid verbetert.
+- Ga echt een gesprek aan wanneer iets onduidelijk is.
+- Stel maximaal één vervolgvraag per antwoord.
+- Wees consistent in uw antwoorden.
+
+CONTACTGEGEVENS BOITENLUHRS
+
+Algemeen telefoonnummer:
+088-999 36 66
+
+Algemeen e-mailadres:
+info@boitenluhrs.nl
+
+Telefoonnummer kantoor Amsterdam:
+020 - 689 00 00
+
+Contactpagina:
+https://boitenluhrs.nl/contact
+
+BETALEN
+
+Als de gebruiker direct wil betalen:
+verwijs naar:
+https://boitenluhrs.nl/debiteur/
+
+BETALINGSREGELING
+
+Als de gebruiker vraagt naar een betalingsregeling:
+verwijs naar:
+https://boitenluhrs.nl/debiteur/regeling-treffen/
+
+Gebruik voor inhoudelijke informatie over een betalingsregeling uitsluitend informatie van deze pagina wanneer deze in de meegeleverde website-inhoud aanwezig is.
+
+LINKS
+
+U mag antwoorden in de taal waarin de vraag gesteld wordt.
+
+Wanneer u verwijst naar een pagina van BoitenLuhrs:
+gebruik altijd de Nederlandstalige pagina.
+
+Voor informatie uit Schuldinfo.nl of KBvG.nl:
+gebruik de directe URL van de meegeleverde externe bron.
+
+DE AI MAG NOOIT
+
+- bepalen wie juridisch gelijk heeft;
+- juridisch advies geven;
+- financieel advies geven;
+- adviseren over proceskansen;
+- inhoudelijk beslissen over een betalingsregeling;
+- zelfstandig uitzonderingen toezeggen;
+- vragen naar persoonsgegevens;
+- persoonsgegevens verwerken;
+- zelfstandig ambtelijke of executoriale stappen bevestigen als rechtsgeldig oordeel;
+- een specifieke juridische situatie beoordelen;
+- antwoord geven op vragen die niet duidelijk gerelateerd zijn aan BoitenLuhrs, betalen, schulden, facturen, incasso, deurwaarders, beslag, betalingsregelingen, vorderingen of het voorkomen van schulden;
+- verwijzen naar een persoonlijke inlogpagina;
+- vragen naar vonnisnummer, factuurnummer, dossiernummer of andere persoonsgegevens;
+- informatie verzinnen die niet in de meegeleverde bronnen staat.
+
+${contextSection}
+
+${faqSection}
+
+${externalSection}`,
                 },
                 ...history,
             ],
         };
     }
+    _addTargetBlankToLinks(text) {
+        return text.replace(/<a\s+([^>]*href=["'][^"']+["'][^>]*)>/gi, (match, attributes) => {
+            if (/target=["']_blank["']/i.test(attributes)) {
+                return match;
+            }
+            return `<a ${attributes} target="_blank" rel="noopener noreferrer">`;
+        });
+    }
     _truncateByLines(text) {
         const max = this.maxReplyLines;
         const lines = text.split(/\r?\n/);
-        if (lines.length <= max)
+        if (lines.length <= max) {
             return text;
-        const kept = lines.slice(0, max).join("\n");
-        // Teruggeven zonder extra annotatie; houd de output kort en laat de assistant
-        // zelf een korte vervolgvraag stellen volgens de system prompt indien nodig.
-        return kept;
+        }
+        return lines.slice(0, max).join("\n");
     }
-    // Detect whether recent user messages ask about contact
     _isContactRequestFromHistory(history) {
-        // Only consider the last user message as an explicit contact request.
         const last = this._lastUserContent(history).toLowerCase();
-        if (!last)
+        if (!last) {
             return false;
+        }
         return /contact opnemen|contactgegevens|hoe kan ik contact|hoe neem ik contact|telefoonnummer|telefoon|e-?mail|email|contactpagina|postadres|adres/i.test(last);
     }
     _lastUserContent(history) {
         for (let i = history.length - 1; i >= 0; i--) {
-            if (history[i].role === "user")
+            if (history[i].role === "user") {
                 return history[i].content || "";
+            }
         }
         return "";
     }
@@ -116,58 +298,36 @@ contextSection{faqSection}`,
         let out = reply.trim();
         const lower = out.toLowerCase();
         const parts = [];
-        if (!/088[-\s]*999[-\s]*36[-\s]*66/.test(out))
+        if (!/088[-\s]*999[-\s]*36[-\s]*66/.test(out)) {
             parts.push(`Telefoon: ${PHONE}`);
-        if (!/info@boitenluhrs\.nl/i.test(out))
+        }
+        if (!/info@boitenluhrs\.nl/i.test(out)) {
             parts.push(`E-mail: ${EMAIL}`);
-        if (!/boitenluhrs\.nl\/(contact|contactpagina)|contactpagina/i.test(lower))
+        }
+        if (!/boitenluhrs\.nl\/(contact|contactpagina)|contactpagina/i.test(lower)) {
             parts.push(`Contactpagina: ${CONTACT_PAGE}`);
-        if (parts.length > 0)
+        }
+        if (parts.length > 0) {
             out += `\n\n- ${parts.join("\n- ")}`;
-        const lastUser = this._lastUserContent(history).toLowerCase();
-        const lastAssistant = [...history].reverse().find((h) => h.role === "assistant")?.content || "";
-        // const userAskedAddressDirect =
-        //   /postadres|post adres|post-adres|postbus|adres/i.test(lastUser);
-        // const assistantAskedForPost = /Wilt u ook het postadres ontvangen\?/i.test(
-        //   lastAssistant,
-        // );
-        // const userAffirmative =
-        //   /\b(ja|graag|ja graag|heel graag|graag graag|ok|oké|oke)\b/i.test(
-        //     lastUser,
-        //   );
-        // if (userAskedAddressDirect || (assistantAskedForPost && userAffirmative)) {
-        //   out += `\n\nWe hebben meerdere vestigingen door het land. Om u het juiste adres te kunnen geven, zou ik graag uw postcode of woonplaats willen weten. U kunt ook bellen naar ${PHONE} of mailen naar ${EMAIL}.`;
-        // } else {
-        //   // Only prompt for the postadres when the user explicitly asked for
-        //   // contact information in their most recent message.
-        //   if (
-        //     userAskedContact &&
-        // !/postadres|post adres|post-adres|postbus|adres/i.test(lower)
-        //   )
-        //     out += `\n\nWilt u ook het postadres ontvangen?`;
-        // }
+        }
         return out;
     }
-    /**
-     * Als het antwoord meerdere genummerde/gewiste stappen bevat, houd alleen de eerste stap.
-     */
     _condenseToSingleStep(text) {
         const lines = text
             .split(/\r?\n/)
-            .map((l) => l.trim())
+            .map((line) => line.trim())
             .filter(Boolean);
-        // Vind lijnen die duidelijk stappen zijn ("Stap 1", "1.", "1)", "- ")
-        const stepLines = lines.filter((l) => /^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i.test(l));
+        const stepLines = lines.filter((line) => /^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i.test(line));
         if (stepLines.length <= 1) {
-            // Ook controleren op inline genummerde stappen zoals "1) ... 2) ..."
             const inlineMatches = text.match(/\d+[\.)]\s+/g);
-            if (!inlineMatches || inlineMatches.length <= 1)
+            if (!inlineMatches || inlineMatches.length <= 1) {
                 return text;
-            // Probeer eerste inline groep te extraheren
-            const m = text.match(/\d+[\.)]\s*([^\d]+)/);
-            if (m && m[1])
-                // return `${m[1].trim()}\n\n*Antwoord ingekort tot één stap.*`;
-                return text;
+            }
+            const match = text.match(/\d+[\.)]\s*([^\d]+)/);
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+            return text;
         }
         const first = stepLines[0]
             .replace(/^(?:Stap\s*\d+|Step\s*\d+|\d+[\.)]|[-*+]\s)/i, "")
@@ -180,18 +340,21 @@ contextSection{faqSection}`,
     _extractTotalTokens(data) {
         return data?.usage?.total_tokens ?? 0;
     }
-    async forwardMessage(history, faqContent = "") {
-        if (!this.apiKey)
+    async forwardMessage(history, faqContent = "", externalContent = "") {
+        if (!this.apiKey) {
             throw new Error("Serverconfiguratie mist API key.");
-        if (!this.model)
+        }
+        if (!this.model) {
             throw new Error("Serverconfiguratie mist model.");
+        }
+        const body = this._buildRequestBody(history, faqContent, externalContent);
         const response = await fetch(this.apiUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${this.apiKey}`,
             },
-            body: JSON.stringify(this._buildRequestBody(history, faqContent)),
+            body: JSON.stringify(body),
         });
         if (!response.ok) {
             const errorBody = await response.text();
@@ -206,18 +369,15 @@ contextSection{faqSection}`,
         }
         const data = (await response.json());
         const reply = this._extractReply(data);
-        if (!reply)
+        if (!reply) {
             throw new Error("Geen antwoord ontvangen van Mistral.");
-        // Preserve the original reply. Only condense if there are multiple numbered steps.
+        }
         let replyToUse = reply;
         const stepMatches = reply.match(/\d+[\.)]\s+/g);
         if (stepMatches && stepMatches.length > 1) {
             replyToUse = this._condenseToSingleStep(reply);
         }
-        // Truncate the (possibly condensed) reply to configured max lines.
         const truncated = this._truncateByLines(replyToUse);
-        // Append contact info only if the user explicitly asked about contact
-        // in their most recent message.
         const userAskedContact = this._isContactRequestFromHistory(history);
         const finalReply = userAskedContact
             ? this._ensureContactInfo(truncated, history, true)
@@ -228,26 +388,73 @@ contextSection{faqSection}`,
         };
     }
     async askIfRelevant(message) {
-        if (!this.apiKey)
+        if (!this.apiKey) {
             throw new Error("Serverconfiguratie mist API key.");
-        if (!this.model)
+        }
+        if (!this.model) {
             throw new Error("Serverconfiguratie mist model.");
+        }
         const prompt = `
-Beantwoord alleen met "ja" of "nee".
+Beantwoord uitsluitend met "ja" of "nee".
 
-Is de volgende vraag gerelateerd aan een incassobureau zoals BoitenLuhrs?
-Het gaat alleen om onderwerpen zoals: schulden, betalingen, facturen, incasso, deurwaarders, vorderingen, beslag, betalingsregelingen, contact over een dossier of het voorkomen van schulden.
-Vraag over het kopen van producten of diensten, zoals een fiets, kleding, eten of andere winkels, is niet relevant.
-Als de vraag slechts het woord "Boiten" of een vergelijkbare naam bevat maar verder over iets anders gaat, antwoord dan "nee".
+Bepaal of de volgende vraag inhoudelijk relevant is voor BoitenLuhrs of voor de toegestane externe informatiebronnen Schuldinfo.nl en KBvG.nl.
 
-Vraag: "${message}"
+Antwoord "ja" als de vraag duidelijk gaat over één of meer van deze onderwerpen:
+
+- schulden of betalingsproblemen;
+- betalen of niet kunnen betalen;
+- facturen;
+- openstaande bedragen;
+- vorderingen;
+- incasso;
+- incassokosten;
+- gerechtsdeurwaarders;
+- deurwaarders;
+- beslag;
+- beslagvrije voet;
+- loonbeslag;
+- bankbeslag;
+- executie;
+- ambtelijke handelingen;
+- betalingsregelingen;
+- contact over een incassodossier;
+- brieven van een incassobureau of gerechtsdeurwaarder;
+- algemene rechten en plichten rond schulden en incasso;
+- het ontstaan van schulden;
+- het oplossen of voorkomen van schulden;
+- wat een schuldeiser doet;
+- wat een incassobureau doet;
+- wat een gerechtsdeurwaarder doet;
+- onderwerpen die inhoudelijk behandeld kunnen worden door BoitenLuhrs, Schuldinfo.nl of KBvG.nl.
+- algemene contactvragen over BoitenLuhrs;
+- vragen naar het e-mailadres van BoitenLuhrs;
+- vragen naar het telefoonnummer van BoitenLuhrs;
+- vragen naar de contactpagina of contactgegevens van BoitenLuhrs;
+- vragen over hoe iemand contact kan opnemen met BoitenLuhrs;
+- vragen naar een vestiging of het algemene kantoor van BoitenLuhrs;
+
+Antwoord "nee" als de vraag:
+
+- gaat over het kopen van producten of diensten zoals fietsen, kleding, eten, reizen of andere consumentenaankopen;
+- alleen het woord "Boiten", "Luhrs" of een vergelijkbare naam bevat maar inhoudelijk over iets anders gaat;
+- geen duidelijke relatie heeft met schulden, betalen, facturen, incasso, deurwaarders, beslag of bovengenoemde onderwerpen.
+
+Belangrijk:
+
+- Beoordeel uitsluitend of het onderwerp relevant is.
+- Bepaal niet of de gebruiker juridisch gelijk heeft.
+- Bepaal niet of juridisch advies gegeven mag worden.
+- Een vraag kan relevant zijn terwijl het uiteindelijke antwoord vanwege andere gedragsregels beperkt moet blijven of moet doorverwijzen.
+
+Vraag:
+"${message}"
 `;
         const body = {
             model: this.model,
             messages: [
                 {
                     role: "system",
-                    content: "Je bent een classifier. Antwoord alleen met ja of nee.",
+                    content: 'Je bent een classifier voor een klantenservice-assistent over schulden, incasso en gerechtsdeurwaarders. Antwoord uitsluitend met "ja" of "nee".',
                 },
                 {
                     role: "user",
@@ -264,14 +471,18 @@ Vraag: "${message}"
             body: JSON.stringify(body),
         });
         if (!response.ok) {
-            throw new Error("Mistral relevance check mislukt");
+            const errorBody = await response.text();
+            console.error(`[Mistral] Relevance check mislukt (${response.status}):`, errorBody);
+            throw new Error(`Mistral relevance check mislukt (${response.status})`);
         }
         const data = (await response.json());
-        const reply = data?.choices?.[0]?.message?.content?.toLowerCase() || "";
-        return reply.includes("ja");
+        const reply = data?.choices?.[0]?.message?.content
+            ?.trim()
+            .toLowerCase() || "";
+        return reply === "ja";
     }
 }
-// Singleton instance for standalone usage
+// Singleton instance voor standalone gebruik
 let mistralInstance = null;
 export function initMistral(apiKey, model) {
     mistralInstance = new MistralProxy(apiKey, model);

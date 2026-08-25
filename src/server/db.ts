@@ -173,16 +173,28 @@ export class Database {
     console.log(
       `Ophalen van geschiedenis voor conversatie ${conversationId}, limit ${limit}`,
     );
+
+    const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 20;
+
     const [rows] = await this.pool.execute(
-      `SELECT role, content FROM messages
-     WHERE conversation_id = ?
-     ORDER BY created_at ASC
-     LIMIT ?`,
-      [conversationId, limit],
+      `SELECT role, content
+      FROM messages
+      WHERE conversation_id = ?
+      ORDER BY created_at ASC
+      LIMIT ${safeLimit}`,
+      [conversationId],
     );
+
     const rowCount = Array.isArray(rows) ? rows.length : 0;
-    console.log(`Geschiedenis opgehaald, ${rowCount} berichten gevonden.`);
-    return rows as { role: "user" | "assistant"; content: string }[];
+
+    console.log(
+      `Geschiedenis opgehaald, ${rowCount} berichten gevonden.`,
+    );
+
+    return rows as {
+      role: "user" | "assistant";
+      content: string;
+    }[];
   }
 
   async saveUsageLog(conversationId: number, tokens: number): Promise<void> {
