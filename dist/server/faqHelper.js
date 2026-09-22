@@ -65,7 +65,17 @@ async function loadFAQ() {
             throw new Error(`FAQ URL gaf status ${response.status}`);
         }
         const data = await response.json();
-        faqCache = filterFaqItems(data.faq ?? []);
+        const remoteItems = filterFaqItems(data.faq ?? []);
+        // Deze redactionele correctie heeft voorrang op een oudere online FAQ.
+        const correctedQuestion = normalize("Wat gebeurt er als ik niet betaal?");
+        const localItems = await loadFAQFromLocalFile();
+        const correction = localItems.find((item) => normalize(item.vraag) === correctedQuestion);
+        faqCache = correction
+            ? [
+                ...remoteItems.filter((item) => normalize(item.vraag) !== correctedQuestion),
+                correction,
+            ]
+            : remoteItems;
         return faqCache;
     }
     catch (error) {

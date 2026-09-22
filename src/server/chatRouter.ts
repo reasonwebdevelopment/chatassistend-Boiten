@@ -21,6 +21,58 @@ export class ChatRouter {
     this._registerRoutes();
   }
 
+  private _getFixedClarifyingQuestion(
+    message: string,
+  ): string | null {
+    const normalized = this._normalizeQuestion(message);
+
+    /*
+    * "Rekening" is dubbelzinnig:
+    * - factuur/rekening die iemand moet betalen
+    * - bankrekening
+    *
+    * Daarom eerst verduidelijken.
+    */
+    const isUnclearAccountQuestion =
+      normalized === "mijn rekening klopt niet" ||
+      normalized === "de rekening klopt niet" ||
+      normalized === "mijn rekening is niet goed" ||
+      normalized === "er klopt iets niet aan mijn rekening" ||
+      normalized === "er klopt iets niet met mijn rekening";
+
+    if (isUnclearAccountQuestion) {
+      return "Over welke rekening heeft u het?";
+    }
+
+    /*
+    * Onduidelijke algemene kostenvragen.
+    */
+    const isUnclearCostsQuestion =
+      normalized === "ik snap de kosten niet" ||
+      normalized === "de kosten kloppen niet" ||
+      normalized === "mijn kosten kloppen niet" ||
+      normalized === "ik begrijp de kosten niet";
+
+    if (isUnclearCostsQuestion) {
+      return "Over welke kosten heeft u het?";
+    }
+
+    /*
+    * Een brief zonder verdere context.
+    */
+    const isUnclearLetterQuestion =
+      normalized === "ik heb een brief ontvangen" ||
+      normalized === "ik heb een brief gekregen" ||
+      normalized === "wat betekent deze brief" ||
+      normalized === "ik snap de brief niet";
+
+    if (isUnclearLetterQuestion) {
+      return "Om wat voor soort brief gaat het?";
+    }
+
+    return null;
+  }
+
   /*
    * Geeft vaste antwoorden terug voor vragen waarvan
    * het antwoord altijd exact hetzelfde moet zijn.
@@ -33,12 +85,15 @@ export class ChatRouter {
   ): string | null {
     const normalized = this._normalizeQuestion(message);
 
-    const isEmailQuestion =
-      /\be ?mail\b|\bemailadres\b|\bmailadres\b|\bmailen\b|\bemailen\b/i.test(
+    const isEmailContactQuestion =
+      /\b(wat is|wat zijn|geef|hebben jullie|hoe kan ik|hoe kan|waar vind ik|waar kan ik|kan ik|hoe bereik ik|hoe neem ik contact op|contact opnemen via)\b.*\b(e ?mail|emailadres|mailadres|mailen|emailen)\b/i.test(
+        normalized,
+      ) ||
+      /\b(e ?mailadres|emailadres|mailadres)\b.*\b(van jullie|boitenluhrs|contact)\b/i.test(
         normalized,
       );
 
-    if (!isEmailQuestion) {
+    if (!isEmailContactQuestion) {
       return null;
     }
 
@@ -115,6 +170,32 @@ export class ChatRouter {
 
   - Telefoonnummer: **088-999 35 70**
   - E-mail: **sales@boitenluhrs.nl**`;
+  }
+
+  private _getFixedPersonalDossierAnswer(
+    message: string,
+  ): string | null {
+    const normalized = this._normalizeQuestion(message);
+
+    const isPersonalDossierQuestion =
+      normalized.includes("hoeveel schuld") ||
+      normalized.includes("hoeveel staat er open") ||
+      normalized.includes("wat staat er nog open") ||
+      normalized.includes("openstaand bedrag") ||
+      normalized.includes("mijn dossier") ||
+      normalized.includes("mijn schuld") ||
+      normalized.includes("saldo van mijn dossier") ||
+      normalized.includes("wat moet ik nog betalen");
+
+    if (!isPersonalDossierQuestion) {
+      return null;
+    }
+
+    return `Helaas kan ik uw persoonlijke dossier niet inzien. Daarvoor moet u contact opnemen met uw dossierbehandelaar.
+
+  Het directe telefoonnummer en e-mailadres staan op de brief. Als u deze niet bij de hand heeft, kunt u het contactformulier invullen of bellen met **088 - 999 36 66**.
+
+  Contactformulier: https://boitenluhrs.nl/contact`;
   }
 
   /*
@@ -369,6 +450,71 @@ export class ChatRouter {
     return null;
   }
 
+  private _findReusableAnswer(
+    history: {
+      role: "user" | "assistant";
+      content: string;
+    }[],
+    currentQuestion: string,
+  ): string | null {
+    const question = this._normalizeQuestion(currentQuestion);
+
+    // Alleen zelfstandige verzoeken waarvoor hergebruik gewenst is.
+    const reusableQuestions = new Set([
+      "ik wil betalen",
+      "ik wil een betalingsregeling",
+      "ik wil een betalingsregeling aanvragen",
+      "ik wil een betalingsregeling treffen",
+      "ik wil een regeling treffen",
+    ]);
+
+    if (!reusableQuestions.has(question)) {
+      return null;
+    }
+
+    // Zoek het meest recente antwoord op exact dezelfde vraag.
+    for (let i = history.length - 2; i >= 0; i--) {
+      const previousQuestion = history[i];
+      const previousAnswer = history[i + 1];
+
+      if (
+        previousQuestion.role !== "user" ||
+        previousAnswer.role !== "assistant" ||
+        this._normalizeQuestion(previousQuestion.content) !== question
+      ) {
+        continue;
+      }
+
+      const answer = previousAnswer.content.trim();
+
+      // Herhaal geen standaardafwijzing of bekende foutmelding.
+      if (
+        !answer ||
+        answer === NON_RELEVANT_REPLY.trim() ||
+        /^Ik kan u helpen met algemene vragen over betalingen/i.test(answer) ||
+        /^Er is iets misgegaan/i.test(answer)
+      ) {
+        return null;
+      }
+
+      // Bij tussenliggende inhoudelijke berichten kan de context
+      // veranderd zijn. Sta alleen een bedankje of afscheid toe.
+      const interveningUserMessages = history
+        .slice(i + 2)
+        .filter((message) => message.role === "user");
+
+      const onlyClosings = interveningUserMessages.every((message) =>
+        /^(bedankt|dank u|dank je|dankjewel|dankuwel|dank u wel|dank je wel|tot ziens|fijne dag)$/.test(
+          this._normalizeQuestion(message.content),
+        ),
+      );
+
+      return onlyClosings ? answer : null;
+    }
+
+    return null;
+  }
+
   private _registerRoutes() {
     this.router.post(
       "/chat",
@@ -417,6 +563,38 @@ export class ChatRouter {
            * - externe bronnen
            * - Mistral
            */
+
+          /*
+          * Eerst controleren of de gebruiker een algemene,
+          * maar nog onduidelijke vraag stelt.
+          */
+          const clarifyingQuestion =
+            this._getFixedClarifyingQuestion(userMessage);
+
+          if (clarifyingQuestion) {
+            console.log(
+              "[CHAT] Onduidelijke algemene vraag gevonden. Verduidelijkende vraag wordt gesteld.",
+            );
+
+            await this.db.saveMessage(
+              convId,
+              "user",
+              userMessage,
+            );
+
+            await this.db.saveMessage(
+              convId,
+              "assistant",
+              clarifyingQuestion,
+            );
+
+            res.json({
+              reply: clarifyingQuestion,
+              conversation_id: convId,
+            });
+
+            return;
+          }
           
           const fixedContactAnswer =
             this._getFixedContactAnswer(
@@ -506,6 +684,34 @@ export class ChatRouter {
             return;
           }
 
+          const fixedPersonalDossierAnswer =
+            this._getFixedPersonalDossierAnswer(userMessage);
+
+          if (fixedPersonalDossierAnswer) {
+            console.log(
+              "[CHAT] Persoonlijke dossier-vraag gevonden. Vast antwoord wordt gebruikt.",
+            );
+
+            await this.db.saveMessage(
+              convId,
+              "user",
+              userMessage,
+            );
+
+            await this.db.saveMessage(
+              convId,
+              "assistant",
+              fixedPersonalDossierAnswer,
+            );
+
+            res.json({
+              reply: fixedPersonalDossierAnswer,
+              conversation_id: convId,
+            });
+
+            return;
+          }
+
           /*
            * 4. Bestaande geschiedenis ophalen
            *
@@ -522,29 +728,18 @@ export class ChatRouter {
            * 5. Eerst controleren of dezelfde of vergelijkbare
            * vraag al eerder is beantwoord.
            */
-          const previousAnswer =
-            this._findPreviousAnswer(
-              existingHistory,
-              userMessage,
-            );
+          const previousAnswer = this._findReusableAnswer(
+            existingHistory,
+            userMessage,
+          );
 
-          if (previousAnswer) {
-            console.log(
-              "[CHAT] Vergelijkbare vraag eerder beantwoord. Exact hetzelfde antwoord wordt hergebruikt.",
-            );
-
-            /*
-             * Huidige vraag wel gewoon opslaan.
-             */
+          if (previousAnswer !== null) {
             await this.db.saveMessage(
               convId,
               "user",
               userMessage,
             );
 
-            /*
-             * Exact hetzelfde eerdere antwoord opslaan.
-             */
             await this.db.saveMessage(
               convId,
               "assistant",
@@ -569,6 +764,7 @@ export class ChatRouter {
             relevant =
               await this.aiProxy.askIfRelevant(
                 userMessage,
+                existingHistory,
               );
           } catch (error) {
             console.error(

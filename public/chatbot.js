@@ -562,7 +562,7 @@
       <div class="bl-header">
         <div class="bl-avatar">B</div>
         <div>
-          <div class="bl-name">BoitenLuhrs</div>
+          <div class="bl-name">Virtuele betaal coach</div>
           <div class="bl-status"><span class="bl-dot"></span> Online</div>
         </div>
         <button class="bl-close-btn" aria-label="Sluit chat">✕</button>

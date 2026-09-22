@@ -129,16 +129,14 @@ export class Database {
         console.log("Bericht opgeslagen.");
     }
     async getHistory(conversationId, limit = 20) {
-        console.log(`Ophalen van geschiedenis voor conversatie ${conversationId}, limit ${limit}`);
         const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 20;
         const [rows] = await this.pool.execute(`SELECT role, content
       FROM messages
       WHERE conversation_id = ?
-      ORDER BY created_at ASC
+      ORDER BY id DESC
       LIMIT ${safeLimit}`, [conversationId]);
-        const rowCount = Array.isArray(rows) ? rows.length : 0;
-        console.log(`Geschiedenis opgehaald, ${rowCount} berichten gevonden.`);
-        return rows;
+        const messages = rows;
+        return messages.reverse();
     }
     async saveUsageLog(conversationId, tokens) {
         await this.pool.execute("INSERT INTO usage_logs (conversation_id, tokens) VALUES (?, ?)", [conversationId, tokens]);
