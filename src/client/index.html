@@ -14,6 +14,54 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./style.css" />
+    <style>
+      /* Robotknop en uitnodiging; de bestaande knopafmetingen blijven behouden. */
+      .chat-bubble__icon--open {
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      .chat-bubble__greeting {
+        position: absolute;
+        right: calc(100% + 14px);
+        top: 50%;
+        transform: translateY(-50%);
+        width: max-content;
+        max-width: calc(100vw - 130px);
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+        color: var(--ink);
+        font: 500 0.85rem/1.5 var(--font-body);
+        box-shadow: var(--shadow-md);
+      }
+
+      .chat-bubble__greeting::after {
+        content: "";
+        position: absolute;
+        right: -6px;
+        top: calc(50% - 6px);
+        width: 12px;
+        height: 12px;
+        transform: rotate(45deg);
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+
+      .chat-bubble.is-open .chat-bubble__greeting {
+        display: none;
+      }
+
+      .chat-popup__avatar {
+        padding: 0;
+        object-fit: cover;
+      }
+    </style>
   </head>
   <body>
     <!-- NAV -->
@@ -112,15 +160,26 @@
       role="button"
       tabindex="0"
     >
-      <span class="chat-bubble__icon chat-bubble__icon--open"> 💬</span>
+      <img
+        class="chat-bubble__icon chat-bubble__icon--open"
+        src="./robot-avatar.png"
+        alt=""
+      />
+      <span class="chat-bubble__greeting">Waarmee kan ik je helpen</span>
       <span class="chat-bubble__icon chat-bubble__icon--close">✕</span>
     </div>
 
     <div class="chat-popup" id="chatPopup" aria-hidden="true">
       <div class="chat-popup__header">
-        <div class="chat-popup__avatar">B</div>
+        <img
+          class="chat-popup__avatar"
+          src="./robot-avatar.png"
+          alt="Robotassistent"
+          width="38"
+          height="38"
+        />
         <div class="chat-popup__meta">
-          <div class="chat-popup__name">Virtuele Betaal Coach</div>
+          <div class="chat-popup__name">AI assistent BoitenLuhrs</div>
           <div class="chat-popup__status">
             <span class="status-dot"></span> Online
           </div>
@@ -151,7 +210,7 @@
             toegang tot persoonlijke dossiers of actuele betaalgegevens. Ik ben
             vooralsnog alleen in het Nederlands te gebruiken. -->
 
-            Hallo, welkom bij de Chatbot van BoitenLuhrs. Ik help met algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens. Ik ben vooralsnog alleen in het Nederlands te gebruiken.
+            Hallo, ik ben de AI assistent van BoitenLuhrs. Ik help met algemene vragen over betalingen, brieven, betalingsregelingen, de dienstverlening en het incasso- en deurwaarderstraject. Ik heb geen toegang tot persoonlijke dossiers of actuele betaalgegevens. Ik ben vooralsnog alleen in het Nederlands te gebruiken.
           </div>
           <div class="chat-message__time">Nu</div>
         </div>
